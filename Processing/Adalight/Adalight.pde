@@ -36,6 +36,7 @@ GraphicsDevice[] gs;
 PImage           preview = createImage(arrayWidth, arrayHeight, RGB);
 Rectangle        bounds;
 Serial           port;
+DisposeHandler   dh; // For disabling LEDs on exit
 
 void setup() {
   GraphicsEnvironment ge;
@@ -43,6 +44,7 @@ void setup() {
   int                 i;
   float               f;
 
+  dh   = new DisposeHandler(this);
   port = new Serial(this, Serial.list()[0], 115200);
 
   size(arrayWidth * imgScale, arrayHeight * imgScale, JAVA2D);
@@ -149,5 +151,22 @@ color block(PImage image, int x, int y) {
   }
 
   return color(r / s2, g / s2, b / s2);
+}
+
+// The DisposeHandler is called on program exit (but before the Serial
+// library is shutdown), in order to turn off the LEDs (reportedly more
+// reliable than stop()).  Seems to work for the window close box and
+// escape key exit, but not the 'Quit' menu option.
+// Thanks to phi.lho in the Processing forums.
+
+public class DisposeHandler {
+  DisposeHandler(PApplet pa) {
+    pa.registerDispose(this);
+  }
+  public void dispose() {
+    // Fill buffer (after header) with 0's, and issue to Arduino...
+    Arrays.fill(buffer, 6, buffer.length, byte(0));
+    port.write(buffer);
+  }
 }
 

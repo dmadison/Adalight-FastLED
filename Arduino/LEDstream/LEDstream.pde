@@ -83,7 +83,7 @@ void setup()
   unsigned long
     t             = 0;
 
-  LED_DDR  |= LED_PIN;  // Enable output for LED
+  LED_DDR  |=  LED_PIN; // Enable output for LED
   LED_PORT &= ~LED_PIN; // LED off
 
   Serial.begin(115200); // Teensy/32u4 disregards baud rate; is OK!
@@ -98,6 +98,22 @@ void setup()
   // resistors, and 4 MHz was possible with a 220 Ohm resistor on the
   // SPI clock line only.  Your mileage may vary.  Experiment!
   // SPI.setClockDivider(SPI_CLOCK_DIV4);  // 4 MHz
+
+  // Issue test pattern to LEDs on startup.  This helps verify that
+  // wiring between the Arduino and LEDs is correct.  Not knowing the
+  // actual number of LEDs connected, this sets all of them (well, up
+  // to the first 25,000, so as not to be TOO time consuming) to red,
+  // green, blue, then off.  Once you're confident everything is working
+  // end-to-end, it's OK to comment this out and reprogram the Arduino.
+  uint8_t testcolor[] = { 0, 0, 0, 255, 0, 0 };
+  for(char n=3; n>=0; n--) {
+    for(c=0; c<25000; c++) {
+      for(i=0; i<3; i++) {
+        for(SPDR = testcolor[n + i]; !(SPSR & _BV(SPIF)); );
+      }
+    }
+    delay(1); // One millisecond pause = latch
+  }
 
   // loop() is avoided as even that small bit of function overhead
   // has a measurable impact on this code's overall throughput.

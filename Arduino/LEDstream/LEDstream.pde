@@ -77,11 +77,12 @@ void setup()
     hi, lo, chk, i, spiFlag;
   int16_t
     bytesBuffered = 0,
+    hold          = 0,
     c;
   int32_t
     bytesRemaining;
   unsigned long
-    t             = 0;
+    startTime     = micros();
 
   LED_DDR  |=  LED_PIN; // Enable output for LED
   LED_PORT &= ~LED_PIN; // LED off
@@ -145,8 +146,8 @@ void setup()
             // (# LEDs is always > 0) and multiply by 3 for R,G,B.
             bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
             bytesBuffered -= 3;
-            mode           = MODE_HOLD; // Proceed to latch wait mode
             spiFlag        = 0;         // No data out yet
+            mode           = MODE_HOLD; // Proceed to latch wait mode
           } else {
             // Checksum didn't match; search resumes after magic word.
             indexOut  -= 3; // Rewind
@@ -162,7 +163,7 @@ void setup()
       // to complete" mode, but may also revert to this mode when
       // underrun prevention necessitates a delay.
 
-      if(micros() < t) break;  // Still holding; continue buffering.
+      if((micros() - startTime) < hold) break; // Still holding; keep buffering
 
       // Latch/delay complete.  Advance to data-issuing mode...
       LED_PORT &= ~LED_PIN;  // LED off
@@ -182,14 +183,16 @@ void setup()
         // introducing progressively longer pauses to allow more
         // data to arrive (up to a point).
         if((bytesBuffered < 32) && (bytesRemaining > bytesBuffered)) {
-          mode = MODE_HOLD;
-          t    = micros() + 60 + (32 - bytesBuffered) * 20;
+          startTime = micros();
+          hold      = 100 + (32 - bytesBuffered) * 10;
+          mode      = MODE_HOLD;
 	}
       } else {
         // End of data -- issue latch:
-        t         = micros() + 1000; // Latch duration = 1000 uS
-        LED_PORT |= LED_PIN;         // LED on
-        mode      = MODE_HEADER;     // Begin next header search
+        startTime  = micros();
+        hold       = 1000;        // Latch duration = 1000 uS
+        LED_PORT  |= LED_PIN;     // LED on
+        mode       = MODE_HEADER; // Begin next header search
       }
     } // end switch
   } // end for(;;)

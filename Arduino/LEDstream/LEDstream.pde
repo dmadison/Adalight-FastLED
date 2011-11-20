@@ -61,6 +61,11 @@ static const uint8_t magic[] = {'A','d','a'};
 #define MODE_HOLD   1
 #define MODE_DATA   2
 
+// If no serial data is received for a while, the LEDs are shut off
+// automatically.  This avoids the annoying "stuck pixel" look when
+// quitting LED display programs on the host computer.
+static const unsigned long serialTimeout = 15000; // 15 seconds
+
 void setup()
 {
   // Dirty trick: the circular buffer for serial data is 256 bytes,
@@ -82,7 +87,10 @@ void setup()
   int32_t
     bytesRemaining;
   unsigned long
-    startTime     = micros();
+    startTime,
+    lastByteTime,
+    lastAckTime,
+    t;
 
   LED_DDR  |=  LED_PIN; // Enable output for LED
   LED_PORT &= ~LED_PIN; // LED off
@@ -116,6 +124,11 @@ void setup()
     delay(1); // One millisecond pause = latch
   }
 
+  Serial.print("Ada\n"); // Send ACK string to host
+
+  startTime    = micros();
+  lastByteTime = lastAckTime = millis();
+
   // loop() is avoided as even that small bit of function overhead
   // has a measurable impact on this code's overall throughput.
 
@@ -123,9 +136,26 @@ void setup()
 
     // Implementation is a simple finite-state machine.
     // Regardless of mode, check for serial input each time:
+    t = millis();
     if((bytesBuffered < 256) && ((c = Serial.read()) >= 0)) {
       buffer[indexIn++] = c;
       bytesBuffered++;
+      lastByteTime = lastAckTime = t; // Reset timeout counters
+    } else {
+      // No data received.  If this persists, send an ACK packet
+      // to host once every second to alert it to our presence.
+      if((t - lastAckTime) > 1000) {
+        Serial.print("Ada\n"); // Send ACK string to host
+        lastAckTime = t; // Reset counter
+      }
+      // If no data received for an extended time, turn off all LEDs.
+      if((t - lastByteTime) > serialTimeout) {
+        for(c=0; c<32767; c++) {
+          for(SPDR=0; !(SPSR & _BV(SPIF)); );
+        }
+        delay(1); // One millisecond pause = latch
+        lastByteTime = t; // Reset counter
+      }
     }
 
     switch(mode) {

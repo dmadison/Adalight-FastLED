@@ -103,6 +103,7 @@ short[][]        ledColor    = new short[leds.length][3],
                  prevColor   = new short[leds.length][3];
 byte[][]         gamma       = new byte[256][3];
 int              nDisplays   = displays.length;
+Robot[]          bot         = new Robot[displays.length];
 Rectangle[]      dispBounds  = new Rectangle[displays.length];
 int[][]          screenData  = new int[displays.length][],
                  pixelOffset = new int[leds.length][256];
@@ -110,7 +111,6 @@ PImage[]         preview     = new PImage[displays.length];
 Serial           port;
 GraphicsDevice[] gd;
 DisposeHandler   dh; // For disabling LEDs on exit
-
 
 // INITIALIZATION ------------------------------------------------------------
 
@@ -142,6 +142,13 @@ void setup() {
   if(nDisplays > gd.length) nDisplays = gd.length;
   totalWidth = maxHeight = 0;
   for(d=0; d<nDisplays; d++) { // For each display...
+    try {
+      bot[d] = new Robot(gd[displays[d][0]]);
+    }
+    catch(AWTException e) {
+      System.out.println("new Robot() failed");
+      continue;
+    }
     gc              = gd[displays[d][0]].getConfigurations();
     dispBounds[d]   = gc[0].getBounds();
     dispBounds[d].x = dispBounds[d].y = 0;
@@ -264,14 +271,7 @@ void draw () {
   // each capture action, and so one large block capture generally finishes
   // sooner than a multitude of smaller ones.
   for(d=0; d<nDisplays; d++) {
-    try {
-      img = new Robot(gd[displays[d][0]]).createScreenCapture(dispBounds[d]);
-    }
-    catch(AWTException e) {
-      System.out.println("Screen capture failed.");
-      continue;
-    }
-
+    img = bot[d].createScreenCapture(dispBounds[d]);
     // Get location of source pixel data
     screenData[d] = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
   }

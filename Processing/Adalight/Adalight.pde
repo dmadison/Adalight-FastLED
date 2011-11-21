@@ -109,7 +109,6 @@ int[][]          screenData  = new int[displays.length][],
                  pixelOffset = new int[leds.length][256];
 PImage[]         preview     = new PImage[displays.length];
 Serial           port;
-GraphicsDevice[] gd;
 DisposeHandler   dh; // For disabling LEDs on exit
 
 // INITIALIZATION ------------------------------------------------------------
@@ -117,6 +116,7 @@ DisposeHandler   dh; // For disabling LEDs on exit
 void setup() {
   GraphicsEnvironment     ge;
   GraphicsConfiguration[] gc;
+  GraphicsDevice[]        gd;
   int                     d, i, totalWidth, maxHeight, row, col, rowOffset;
   float                   f, startX, curX, curY, incX, incY;
 

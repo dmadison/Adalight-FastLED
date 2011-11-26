@@ -32,6 +32,14 @@ static final short fade = 75;
 
 static final int pixelSize = 20;
 
+// Depending on many factors, it may be faster either to capture full
+// screens and process only the pixels needed, or to capture multiple
+// smaller sub-blocks bounding each region to be processed.  Try both,
+// look at the reported frame rates in the Processing output console,
+// and run with whichever works best for you.
+
+static final boolean useFullScreenCaps = true;
+
 // Serial device timeout (in milliseconds), for locating Arduino device
 // running the corresponding LEDstream code.  See notes later in the code...
 // in some situations you may want to entirely comment out that block.
@@ -104,9 +112,10 @@ short[][]        ledColor    = new short[leds.length][3],
 byte[][]         gamma       = new byte[256][3];
 int              nDisplays   = displays.length;
 Robot[]          bot         = new Robot[displays.length];
-Rectangle[]      dispBounds  = new Rectangle[displays.length];
-int[][]          screenData  = new int[displays.length][],
-                 pixelOffset = new int[leds.length][256];
+Rectangle[]      dispBounds  = new Rectangle[displays.length],
+                 ledBounds;  // Alloc'd only if per-LED captures
+int[][]          pixelOffset = new int[leds.length][256],
+                 screenData; // Alloc'd only if full-screen captures
 PImage[]         preview     = new PImage[displays.length];
 Serial           port;
 DisposeHandler   dh; // For disabling LEDs on exit
@@ -118,9 +127,10 @@ void setup() {
   GraphicsConfiguration[] gc;
   GraphicsDevice[]        gd;
   int                     d, i, totalWidth, maxHeight, row, col, rowOffset;
-  float                   f, startX, curX, curY, incX, incY;
+  int[]                   x = new int[16], y = new int[16];
+  float                   f, range, step, start;
 
-  dh   = new DisposeHandler(this); // Init DisposeHandler ASAP
+  dh = new DisposeHandler(this); // Init DisposeHandler ASAP
 
   // Open serial port.  As written here, this assumes the Arduino is the
   // first/only serial device on the system.  If that's not the case,
@@ -136,7 +146,15 @@ void setup() {
   // And finally, to test the software alone without an Arduino connected,
   // don't open a port...just comment out the serial lines above.
 
-  // Initialize screen capture code for each display's dimensions:
+  // Initialize screen capture code for each display's dimensions.
+  dispBounds = new Rectangle[displays.length];
+  if(useFullScreenCaps == true) {
+    screenData = new int[displays.length][];
+    // ledBounds[] not used
+  } else {
+    ledBounds  = new Rectangle[leds.length];
+    // screenData[][] not used
+  }
   ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
   gd = ge.getScreenDevices();
   if(nDisplays > gd.length) nDisplays = gd.length;
@@ -160,26 +178,39 @@ void setup() {
   }
 
   // Precompute locations of every pixel to read when downsampling.
-  // Saves a bunch of math on each frame, at the expense of a chunk of RAM;
-  // but hey, it's not like the screen captures are petite either.
+  // Saves a bunch of math on each frame, at the expense of a chunk
+  // of RAM.  Number of samples is now fixed at 256; this allows for
+  // some crazy optimizations in the downsampling code.
   for(i=0; i<leds.length; i++) { // For each LED...
     d = leds[i][0]; // Corresponding display index
-    startX = (float)dispBounds[d].width  / (float)displays[d][1] *
-      ((float)leds[i][1] + (0.5 / 16.0));
-    curY   = (float)dispBounds[d].height / (float)displays[d][2] *
-      ((float)leds[i][2] + (0.5 / 16.0));
-    incX   = (float)dispBounds[d].width  / (float)displays[d][1] / 16.0;
-    incY   = (float)dispBounds[d].height / (float)displays[d][2] / 16.0;
-    // Number of samples is now fixed at 256; this allows for some crazy
-    // optimizations in the downsampling code.
-    for(row=0; row<16; row++) {
-      rowOffset = (int)curY * dispBounds[d].width;
-      curX      = startX;
-      for(col=0; col<16; col++) {
-        pixelOffset[i][row * 16 + col] = rowOffset + (int)curX;
-        curX += incX;
+
+    // Precompute columns, rows of each sampled point for this LED
+    range = (float)dispBounds[d].width / (float)displays[d][1];
+    step  = range / 16.0;
+    start = range * (float)leds[i][1] + step * 0.5;
+    for(col=0; col<16; col++) x[col] = (int)(start + step * (float)col);
+    range = (float)dispBounds[d].height / (float)displays[d][2];
+    step  = range / 16.0;
+    start = range * (float)leds[i][2] + step * 0.5;
+    for(row=0; row<16; row++) y[row] = (int)(start + step * (float)row);
+
+    if(useFullScreenCaps == true) {
+      // Get offset to each pixel within full screen capture
+      for(row=0; row<16; row++) {
+        for(col=0; col<16; col++) {
+          pixelOffset[i][row * 16 + col] =
+            y[row] * dispBounds[d].width + x[col];
+        }
       }
-      curY += incY;
+    } else {
+      // Calc min bounding rect for LED, get offset to each pixel within
+      ledBounds[i] = new Rectangle(x[0], y[0], x[15]-x[0]+1, y[15]-y[0]+1);
+      for(row=0; row<16; row++) {
+        for(col=0; col<16; col++) {
+          pixelOffset[i][row * 16 + col] =
+            (y[row] - y[0]) * ledBounds[i].width + x[col] - x[0];
+        }
+      }
     }
   }
 
@@ -264,16 +295,14 @@ void draw () {
   int           d, i, j, o, c, weight, rb, g, sum, deficit, s2;
   int[]         pxls, offs;
 
-  // Capture each screen in the displays array.  Full screens are captured,
-  // even though typically only the perimeter is used.  Logically it might
-  // seem that capturing just the sampled areas would be faster, but in
-  // practice this is not the case...there's a certain latency associated with
-  // each capture action, and so one large block capture generally finishes
-  // sooner than a multitude of smaller ones.
-  for(d=0; d<nDisplays; d++) {
-    img = bot[d].createScreenCapture(dispBounds[d]);
-    // Get location of source pixel data
-    screenData[d] = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
+  if(useFullScreenCaps == true ) {
+    // Capture each screen in the displays array.
+    for(d=0; d<nDisplays; d++) {
+      img = bot[d].createScreenCapture(dispBounds[d]);
+      // Get location of source pixel data
+      screenData[d] =
+        ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
+    }
   }
 
   weight = 257 - fade; // 'Weighting factor' for new frame vs. old
@@ -289,8 +318,15 @@ void draw () {
   // look reasonably smooth and are handled quickly enough for video.
 
   for(i=0; i<leds.length; i++) {  // For each LED...
-    d    = leds[i][0]; // Corresponding display index
-    pxls = screenData[d];
+    d = leds[i][0]; // Corresponding display index
+    if(useFullScreenCaps == true) {
+      // Get location of source data from prior full-screen capture:
+      pxls = screenData[d];
+    } else {
+      // Capture section of screen (LED bounds rect) and locate data::
+      img  = bot[d].createScreenCapture(ledBounds[i]);
+      pxls = ((DataBufferInt)img.getRaster().getDataBuffer()).getData();
+    }
     offs = pixelOffset[i];
     rb = g = 0;
     for(o=0; o<256; o++) {
@@ -300,9 +336,12 @@ void draw () {
     }
 
     // Blend new pixel value with the value from the prior frame
-    ledColor[i][0]  = (short)((((rb >> 24) & 0xff) * weight + prevColor[i][0] * fade) >> 8);
-    ledColor[i][1]  = (short)(((( g >> 16) & 0xff) * weight + prevColor[i][1] * fade) >> 8);
-    ledColor[i][2]  = (short)((((rb >>  8) & 0xff) * weight + prevColor[i][2] * fade) >> 8);
+    ledColor[i][0]  = (short)((((rb >> 24) & 0xff) * weight +
+                               prevColor[i][0]     * fade) >> 8);
+    ledColor[i][1]  = (short)(((( g >> 16) & 0xff) * weight +
+                               prevColor[i][1]     * fade) >> 8);
+    ledColor[i][2]  = (short)((((rb >>  8) & 0xff) * weight +
+                               prevColor[i][2]     * fade) >> 8);
 
     // Boost pixels that fall below the minimum brightness
     sum = ledColor[i][0] + ledColor[i][1] + ledColor[i][2];

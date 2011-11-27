@@ -347,7 +347,7 @@ void draw () {
     sum = ledColor[i][0] + ledColor[i][1] + ledColor[i][2];
     if(sum < minBrightness) {
       if(sum == 0) { // To avoid divide-by-zero
-        deficit = sum / 3; // Spread equally to R,G,B
+        deficit = minBrightness / 3; // Spread equally to R,G,B
         ledColor[i][0] += deficit;
         ledColor[i][1] += deficit;
         ledColor[i][2] += deficit;

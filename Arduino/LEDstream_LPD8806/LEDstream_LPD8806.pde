@@ -29,6 +29,24 @@
 // This allows the same host-side code (e.g. Adalight, Adavision, etc.)
 // to run with either type of LED pixels.  Huzzah!
 
+// --------------------------------------------------------------------
+//   This file is part of Adalight.
+
+//   Adalight is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU Lesser General Public License as
+//   published by the Free Software Foundation, either version 3 of
+//   the License, or (at your option) any later version.
+
+//   Adalight is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU Lesser General Public License for more details.
+
+//   You should have received a copy of the GNU Lesser General Public
+//   License along with Adalight.  If not, see
+//   <http://www.gnu.org/licenses/>.
+// --------------------------------------------------------------------
+
 #include <SPI.h>
 
 // A 'magic word' precedes each block of LED data; this assists the

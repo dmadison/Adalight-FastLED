@@ -239,6 +239,7 @@ void setup() {
 
   // Preview window shows all screens side-by-side
   size(totalWidth * pixelSize, maxHeight * pixelSize, JAVA2D);
+  noSmooth();
 
   // A special header / magic word is expected by the corresponding LED
   // streaming code running on the Arduino.  This only needs to be initialized
@@ -421,7 +422,8 @@ public class DisposeHandler {
   }
   public void dispose() {
     // Fill serialData (after header) with 0's, and issue to Arduino...
-    Arrays.fill(serialData, 6, serialData.length, (byte)0);
+//    Arrays.fill(serialData, 6, serialData.length, (byte)0);
+    java.util.Arrays.fill(serialData, 6, serialData.length, (byte)0);
     if(port != null) port.write(serialData);
   }
 }

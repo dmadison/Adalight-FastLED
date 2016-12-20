@@ -1,6 +1,6 @@
 ## Synopsis
 
-This is the standard Adalight library, modified to work with 3-pin WS2812B LED strips (2016-era Adafruit NeoPixels). The Arduino code has been modified to use the FastLED library.
+This is the standard Adalight library, modified to work with the FastLED library (fastled.io) and 3-pin WS2812B LED strips (2016-era Adafruit NeoPixels).
 
 In addition to ambilight setups, the protocol can be used to stream any color data from a computer to a WS2812B strip (data rate limited by serial throughput).
 

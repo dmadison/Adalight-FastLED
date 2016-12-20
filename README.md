@@ -14,6 +14,7 @@ Open the WS2812B file in the Arduino IDE and edit the definitions at the top for
 - LED grounding pin (optional)
 - Brightness
 - Serial speed
+- Serial timeout length
 
 Upload to your Arduino and use a corresponding PC application to stream color data. The Processing files are included, though I would recommend using Patrick Siegler's (@psieg) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack).
 

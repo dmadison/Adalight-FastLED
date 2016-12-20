@@ -1,14 +1,14 @@
 // Slightly modified Adalight protocol implementation that uses FastLED
-// library (http://fastled.io) for driving WS2811/WS2812 led stripe
+// library (http://fastled.io) for driving WS2811/WS2812 led strip
 // Was tested only with Prismatik software from Lightpack project
 
 #include "FastLED.h"
 
-#define NUM_LEDS 114 // Max LED count
-#define LED_PIN 6 // arduino output pin
-#define GROUND_PIN 10
-#define BRIGHTNESS 255 // maximum brightness
-#define SPEED 115200 // virtual serial port speed, must be the same in boblight_config 
+#define NUM_LEDS    80     // strip length
+#define LED_PIN     6      // Arduino data output pin
+#define GROUND_PIN  10     // additional grounding pin (optional)
+#define BRIGHTNESS  255    // maximum brightness
+#define SPEED       115200 // serial port speed, max available
 
 CRGB leds[NUM_LEDS];
 uint8_t * ledsRaw = (uint8_t *)leds;

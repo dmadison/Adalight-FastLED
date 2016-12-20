@@ -157,9 +157,6 @@ void setup()
           bytesBuffered--;
           bytesRemaining--;
         }
-        // If serial buffer is threatening to underrun, start
-        // introducing progressively longer pauses to allow more
-        // data to arrive (up to a point).
       } 
       else {
         // End of data -- issue latch:

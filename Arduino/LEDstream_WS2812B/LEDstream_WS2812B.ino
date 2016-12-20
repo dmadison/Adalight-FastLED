@@ -53,28 +53,29 @@ void setup()
   // needs to change, slowing things down tremendously.
   uint8_t
     buffer[256],
-  indexIn       = 0,
-  indexOut      = 0,
-  mode          = MODE_HEADER,
-  hi, lo, chk, i, spiFlag;
+    indexIn       = 0,
+    indexOut      = 0,
+    mode          = MODE_HEADER,
+    hi, lo, chk, i, spiFlag;
   int16_t
     bytesBuffered = 0,
-  hold          = 0,
-  c;
+    hold          = 0,
+    c;
   int32_t
     bytesRemaining;
   unsigned long
     startTime,
-  lastByteTime,
-  lastAckTime,
-  t;
-  int32_t outPos = 0;
+    lastByteTime,
+    lastAckTime,
+    t;
+  int32_t
+    outPos = 0;
 
   Serial.begin(SPEED); // Teensy/32u4 disregards baud rate; is OK!
 
   Serial.print("Ada\n"); // Send ACK string to host
 
-    startTime    = micros();
+  startTime    = micros();
   lastByteTime = lastAckTime = millis();
 
   // loop() is avoided as even that small bit of function overhead

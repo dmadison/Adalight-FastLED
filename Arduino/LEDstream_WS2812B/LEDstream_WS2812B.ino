@@ -1,6 +1,5 @@
 // Slightly modified Adalight protocol implementation that uses FastLED
 // library (http://fastled.io) for driving WS2811/WS2812 led strip
-// Was tested only with Prismatik software from Lightpack project
 
 #include "FastLED.h"
 

@@ -56,15 +56,13 @@ void setup()
     indexIn       = 0,
     indexOut      = 0,
     mode          = MODE_HEADER,
-    hi, lo, chk, i, spiFlag;
+    hi, lo, chk, i;
   int16_t
     bytesBuffered = 0,
-    hold          = 0,
     c;
   int32_t
     bytesRemaining;
   unsigned long
-    startTime,
     lastByteTime,
     lastAckTime,
     t;
@@ -75,7 +73,6 @@ void setup()
 
   Serial.print("Ada\n"); // Send ACK string to host
 
-  startTime    = micros();
   lastByteTime = lastAckTime = millis();
 
   // loop() is avoided as even that small bit of function overhead
@@ -160,7 +157,6 @@ void setup()
       } 
       else {
         // End of data -- issue latch:
-        startTime  = micros();
         mode       = MODE_HEADER; // Begin next header search
         FastLED.show();
       }

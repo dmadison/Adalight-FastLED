@@ -8,6 +8,7 @@
 #define GROUND_PIN  10     // additional grounding pin (optional)
 #define BRIGHTNESS  255    // maximum brightness
 #define SPEED       115200 // serial port speed, max available
+//#define CALIBRATE          // uncomment to set calibration mode
 
 // If no serial data is received for a while, the LEDs are shut off
 // automatically. Value in milliseconds.
@@ -139,8 +140,19 @@ void setup()
 
       if(bytesRemaining > 0) {
         if(bytesBuffered > 0) {
-          if (outPos < sizeof(leds))
-            ledsRaw[outPos++] = buffer[indexOut++];   // Issue next byte
+          if (outPos < sizeof(leds)){
+              #ifdef CALIBRATE
+                if(outPos < 3)
+                  ledsRaw[outPos++] = buffer[indexOut++];
+                else{
+                  ledsRaw[outPos] = ledsRaw[outPos%3]; // Sets RGB data to first LED color
+                  outPos++;
+                  indexOut++;
+                }
+              #else
+                  ledsRaw[outPos++] = buffer[indexOut++];  // Issue next byte
+              #endif    
+          }    
           bytesBuffered--;
           bytesRemaining--;
         }

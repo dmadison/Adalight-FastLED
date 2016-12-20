@@ -9,6 +9,10 @@
 #define BRIGHTNESS  255    // maximum brightness
 #define SPEED       115200 // serial port speed, max available
 
+// If no serial data is received for a while, the LEDs are shut off
+// automatically. Value in milliseconds.
+static const unsigned long serialTimeout = 150000; // 150 seconds
+
 CRGB leds[NUM_LEDS];
 uint8_t * ledsRaw = (uint8_t *)leds;
 
@@ -33,11 +37,6 @@ static const uint8_t magic[] = {
 
 #define MODE_HEADER 0
 #define MODE_DATA   2
-
-// If no serial data is received for a while, the LEDs are shut off
-// automatically.  This avoids the annoying "stuck pixel" look when
-// quitting LED display programs on the host computer.
-static const unsigned long serialTimeout = 150000; // 150 seconds
 
 void setup()
 {

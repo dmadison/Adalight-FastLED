@@ -5,9 +5,10 @@
 
 #define NUM_LEDS    80     // strip length
 #define LED_PIN     6      // Arduino data output pin
-#define GROUND_PIN  10     // additional grounding pin (optional)
 #define BRIGHTNESS  255    // maximum brightness
 #define SPEED       115200 // serial port speed, max available
+
+//#define GROUND_PIN  10     // additional grounding pin (optional)
 //#define CALIBRATE          // uncomment to set calibration mode
 
 // If no serial data is received for a while, the LEDs are shut off
@@ -41,8 +42,11 @@ static const uint8_t magic[] = {
 
 void setup()
 {
-  pinMode(GROUND_PIN, OUTPUT); 
-  digitalWrite(GROUND_PIN, LOW);
+  #ifdef GROUND_PIN
+    pinMode(GROUND_PIN, OUTPUT);
+    digitalWrite(GROUND_PIN, LOW);
+  #endif
+
   FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
 
   // Dirty trick: the circular buffer for serial data is 256 bytes,

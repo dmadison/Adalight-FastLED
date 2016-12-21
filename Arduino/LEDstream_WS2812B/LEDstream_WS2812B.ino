@@ -1,19 +1,25 @@
 // Slightly modified Adalight protocol implementation that uses FastLED
 // library (http://fastled.io) for driving WS2811/WS2812 led strip
 
-#include <FastLED.h>
+#include <FastLED.h> 
 
-#define NUM_LEDS    80     // strip length
-#define LED_PIN     6      // Arduino data output pin
-#define BRIGHTNESS  255    // maximum brightness
-#define SPEED       115200 // serial port speed, max available
+// --------------------------------------------------------------------
 
-//#define GROUND_PIN  10     // additional grounding pin (optional)
+// -- General Settings
+#define NUM_LEDS     80      // strip length
+#define LED_PIN      6       // Arduino data output pin
+#define BRIGHTNESS   255     // maximum brightness
+
+// --- Serial Settings
+#define SPEED        115200  // serial port speed, max available
+static const unsigned long   // time before LEDs are shut off, if no data
+    serialTimeout  = 150000; //    150 seconds
+    
+// -- Optional Settings (Uncomment to add)
+//#define GROUND_PIN 10      // additional grounding pin (optional)
 //#define CALIBRATE          // uncomment to set calibration mode
 
-// If no serial data is received for a while, the LEDs are shut off
-// automatically. Value in milliseconds.
-static const unsigned long serialTimeout = 150000; // 150 seconds
+// --------------------------------------------------------------------
 
 CRGB leds[NUM_LEDS];
 uint8_t * ledsRaw = (uint8_t *)leds;

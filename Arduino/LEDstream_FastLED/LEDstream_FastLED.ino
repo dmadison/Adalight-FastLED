@@ -21,9 +21,9 @@
 static const unsigned long   // time before LEDs are shut off, if no data
     serialTimeout  = 150000; //    150 seconds
     
-// -- Optional Settings (Uncomment to add)
+// -- Optional Settings (uncomment to add)
 //#define GROUND_PIN 10      // additional grounding pin (optional)
-//#define CALIBRATE          // uncomment to set calibration mode
+//#define CALIBRATE          // sets all LEDs to the color of the first
 
 // --------------------------------------------------------------------
 

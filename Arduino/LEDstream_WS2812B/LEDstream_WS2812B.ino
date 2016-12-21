@@ -1,14 +1,16 @@
 // Slightly modified Adalight protocol implementation that uses FastLED
 // library (http://fastled.io) for driving WS2811/WS2812 led strip
 
-#include <FastLED.h> 
-
 // --------------------------------------------------------------------
 
 // -- General Settings
 #define NUM_LEDS     80      // strip length
 #define LED_PIN      6       // Arduino data output pin
 #define BRIGHTNESS   255     // maximum brightness
+
+// --- FastLED Setings
+#define LED_TYPE     WS2812B // led strip type for FastLED
+#define COLOR_ORDER  GRB     // color order for bitbang
 
 // --- Serial Settings
 #define SPEED        115200  // serial port speed, max available
@@ -20,6 +22,8 @@ static const unsigned long   // time before LEDs are shut off, if no data
 //#define CALIBRATE          // uncomment to set calibration mode
 
 // --------------------------------------------------------------------
+
+#include <FastLED.h>
 
 CRGB leds[NUM_LEDS];
 uint8_t * ledsRaw = (uint8_t *)leds;
@@ -53,7 +57,7 @@ void setup()
     digitalWrite(GROUND_PIN, LOW);
   #endif
 
-  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
 
   // Dirty trick: the circular buffer for serial data is 256 bytes,
   // and the "in" and "out" indices are unsigned 8-bit types -- this

@@ -57,8 +57,7 @@ static const uint8_t magic[] = {
 #define MODE_HEADER 0
 #define MODE_DATA   2
 
-void setup()
-{
+void setup(){
   #ifdef GROUND_PIN
     pinMode(GROUND_PIN, OUTPUT);
     digitalWrite(GROUND_PIN, LOW);
@@ -67,12 +66,19 @@ void setup()
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
   FastLED.setBrightness(BRIGHTNESS);
 
+  Serial.begin(SPEED);
+
+  adalight();
+}
+
+void adalight(){ 
   // Dirty trick: the circular buffer for serial data is 256 bytes,
   // and the "in" and "out" indices are unsigned 8-bit types -- this
   // much simplifies the cases where in/out need to "wrap around" the
   // beginning/end of the buffer.  Otherwise there'd be a ton of bit-
   // masking and/or conditional code every time one of these indices
   // needs to change, slowing things down tremendously.
+  
   uint8_t
     buffer[256],
     indexIn       = 0,
@@ -90,8 +96,6 @@ void setup()
     t;
   int32_t
     outPos = 0;
-
-  Serial.begin(SPEED); // Teensy/32u4 disregards baud rate; is OK!
 
   Serial.print("Ada\n"); // Send ACK string to host
 
@@ -188,5 +192,5 @@ void setup()
 
 void loop()
 {
-  // Not used.  See note in setup() function.
+  // Not used.  See note in adalight() function.
 }

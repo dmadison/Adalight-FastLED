@@ -1,5 +1,5 @@
 /* 
- * LEDstream_WS2812B
+ * LEDstream_FastLED
  * 
  * Modified version of Adalight protocol that uses the FastLED
  * library (http://fastled.io) for driving led strips.

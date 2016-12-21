@@ -1,7 +1,7 @@
 // Slightly modified Adalight protocol implementation that uses FastLED
 // library (http://fastled.io) for driving WS2811/WS2812 led strip
 
-#include "FastLED.h"
+#include <FastLED.h>
 
 #define NUM_LEDS    80     // strip length
 #define LED_PIN     6      // Arduino data output pin

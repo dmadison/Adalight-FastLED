@@ -1,29 +1,29 @@
 ## Synopsis
 
-This is the standard Adalight library, modified to work with the FastLED library ([fastled.io](http://fastled.io)) and 3-pin WS2812B LED strips (2016-era Adafruit NeoPixels).
+This is the Adalight library with the Arduino code modified to use [FastLED](https://github.com/FastLED/FastLED) ([fastled.io](http://fastled.io)). This expands Adalight to, in theory, work with [any supported FastLED strip](https://github.com/FastLED/FastLED/wiki/Chipset-reference) including WS2812B (aka Adafruit NeoPixels).
 
-In addition to ambilight setups, the protocol can be used to stream any color data from a computer to a WS2812B strip (data rate limited by serial throughput).
+In addition to ambilight setups, the protocol can be used to stream *any* color data from a computer to supported LED strips (data rate limited by serial throughput).
 
 
 ## Configuration
 
-Open the WS2812B file in the Arduino IDE and edit the definitions at the top for your setup. Specifically:
+Open the LEDstream_FastLED file in the Arduino IDE and edit the setting definitions at the top for your setup. These include:
 
 - Number of LEDs
 - LED data pin
-- LED grounding pin (optional)
-- Brightness
+- Max brightness
+- LED type
+- LED color order
 - Serial speed
 - Serial timeout length
 
+There are also optional settings to configure a dedicated ground pin and to put the Arduino into a "calibration" mode, where all LED colors match the first LED.
+
 Upload to your Arduino and use a corresponding PC application to stream color data. The Processing files are included, though I would recommend using Patrick Siegler's (@psieg) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack).
 
-## Tutorial
+## Issues and LED-types
 
-If you'd like you can follow Adafruit's tutorial, which is fairly comprehensive for the WS2801 they use but is otherwise out of date. You can find the tutorial here:
-
-<https://learn.adafruit.com/adalight-diy-ambient-tv-lighting>
-
+I've only tested the code with the WS2812B strips I have on hand, but so far it performs flawlessly. If you find an issue with the code or can confirm that it works with another chipset, please let me know!
 
 ## License
 

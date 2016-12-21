@@ -1,18 +1,33 @@
-// Slightly modified Adalight protocol implementation that uses FastLED
-// library (http://fastled.io) for driving WS2811/WS2812 led strip
+/* LEDstream_FastLED
+ * 
+ * Modified version of Adalight protocol that uses the FastLED
+ * library (http://fastled.io) for driving led strips.
+ * 
+ * http://github.com/dmadison/Adalight-FastLED
+ * Last Updated: 2016-12-21
+ */
 
-#include "FastLED.h"
+// -- General Settings
+#define NUM_LEDS     80      // strip length
+#define LED_PIN      6       // Arduino data output pin
+#define BRIGHTNESS   255     // maximum brightness
 
-#define NUM_LEDS    80     // strip length
-#define LED_PIN     6      // Arduino data output pin
-#define GROUND_PIN  10     // additional grounding pin (optional)
-#define BRIGHTNESS  255    // maximum brightness
-#define SPEED       115200 // serial port speed, max available
-//#define CALIBRATE          // uncomment to set calibration mode
+// --- FastLED Setings
+#define LED_TYPE     WS2812B // led strip type for FastLED
+#define COLOR_ORDER  GRB     // color order for bitbang
 
-// If no serial data is received for a while, the LEDs are shut off
-// automatically. Value in milliseconds.
-static const unsigned long serialTimeout = 150000; // 150 seconds
+// --- Serial Settings
+#define SPEED        115200  // serial port speed, max available
+static const unsigned long   // time before LEDs are shut off, if no data
+    serialTimeout  = 150000; //    150 seconds
+    
+// -- Optional Settings (uncomment to add)
+//#define GROUND_PIN 10      // additional grounding pin (optional)
+//#define CALIBRATE          // sets all LEDs to the color of the first
+
+// --------------------------------------------------------------------
+
+#include <FastLED.h>
 
 CRGB leds[NUM_LEDS];
 uint8_t * ledsRaw = (uint8_t *)leds;
@@ -39,18 +54,28 @@ static const uint8_t magic[] = {
 #define MODE_HEADER 0
 #define MODE_DATA   2
 
-void setup()
-{
-  pinMode(GROUND_PIN, OUTPUT); 
-  digitalWrite(GROUND_PIN, LOW);
-  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS);
+void setup(){
+  #ifdef GROUND_PIN
+    pinMode(GROUND_PIN, OUTPUT);
+    digitalWrite(GROUND_PIN, LOW);
+  #endif
 
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.setBrightness(BRIGHTNESS);
+
+  Serial.begin(SPEED);
+
+  adalight();
+}
+
+void adalight(){ 
   // Dirty trick: the circular buffer for serial data is 256 bytes,
   // and the "in" and "out" indices are unsigned 8-bit types -- this
   // much simplifies the cases where in/out need to "wrap around" the
   // beginning/end of the buffer.  Otherwise there'd be a ton of bit-
   // masking and/or conditional code every time one of these indices
   // needs to change, slowing things down tremendously.
+  
   uint8_t
     buffer[256],
     indexIn       = 0,
@@ -68,8 +93,6 @@ void setup()
     t;
   int32_t
     outPos = 0;
-
-  Serial.begin(SPEED); // Teensy/32u4 disregards baud rate; is OK!
 
   Serial.print("Ada\n"); // Send ACK string to host
 
@@ -166,5 +189,5 @@ void setup()
 
 void loop()
 {
-  // Not used.  See note in setup() function.
+  // Not used.  See note in adalight() function.
 }

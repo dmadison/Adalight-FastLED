@@ -25,6 +25,12 @@ Upload to your Arduino and use a corresponding PC application to stream color da
 
 I've only tested the code with the WS2812B strips I have on hand, but so far it performs flawlessly. If you find an issue with the code or can confirm that it works with another chipset, please let me know!
 
+## Credits and Contributions
+
+The base for the original FastLED modifications is [this gist](https://gist.github.com/jamesabruce/09d79a56d270ed37870c) by [James Bruce](https://github.com/jamesabruce). Thanks James!
+
+Pull requests to improve this software are always welcome!
+
 ## License
 
 Adalight is free software: you can redistribute it and/or modify

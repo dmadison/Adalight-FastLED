@@ -7,10 +7,11 @@
  * Last Updated: 2017-03-19
  */
 
-// -- General Settings
-static const uint8_t Num_Leds   =  80;     // strip length
-static const uint8_t Led_Pin    =  6;      // Arduino data output pin
-static const uint8_t Brightness =  255;    // maximum brightness
+// --- General Settings
+static const uint8_t 
+	Num_Leds   =  80,     // strip length
+	Led_Pin    =  6,      // Arduino data output pin
+	Brightness =  255;    // maximum brightness
 
 // --- FastLED Setings
 #define LED_TYPE     WS2812B // led strip type for FastLED
@@ -18,11 +19,11 @@ static const uint8_t Brightness =  255;    // maximum brightness
 
 // --- Serial Settings
 static const unsigned long
-	SerialSpeed    = 115200; // serial port speed, max available
-static const unsigned long   // time before LEDs are shut off, if no data
-	SerialTimeout  = 150000; //    150 seconds
+	SerialSpeed    = 115200, // serial port speed, max available  
+	SerialTimeout  = 150000; // time before LEDs are shut off, if no data
+					    // (150 seconds)
     
-// -- Optional Settings (uncomment to add)
+// --- Optional Settings (uncomment to add)
 //#define GROUND_PIN 10      // additional grounding pin (optional)
 //#define CALIBRATE          // sets all LEDs to the color of the first
 
@@ -65,6 +66,9 @@ void setup(){
   FastLED.setBrightness(Brightness);
 
   Serial.begin(SerialSpeed);
+
+  Serial.println(Num_Leds);
+  Serial.println(Led_Pin);
 
   adalight();
 }

@@ -59,7 +59,7 @@ static const uint8_t magic[] = {
 #define CHECKSUM   (MAGICSIZE + 2)
 
 #define MODE_HEADER 0
-#define MODE_DATA   2
+#define MODE_DATA   1
 
 void setup(){
 	#ifdef GROUND_PIN

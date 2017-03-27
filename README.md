@@ -1,8 +1,8 @@
 ## Synopsis
 
-This project modifies the Adalight protocol to use [FastLED](https://github.com/FastLED/FastLED) ([fastled.io](http://fastled.io)). This expands Adalight to, in theory, work with [any supported FastLED strip](https://github.com/FastLED/FastLED/wiki/Chipset-reference) including WS2812B (aka Adafruit NeoPixels).
+This project modifies the Adalight protocol to use [FastLED](https://github.com/FastLED/FastLED) ([fastled.io](http://fastled.io)). This expands Adalight to, in theory, work with *[any supported FastLED strip](https://github.com/FastLED/FastLED/wiki/Chipset-reference)* including WS2812B (aka Adafruit NeoPixels).
 
-In addition to ambilight setups, the protocol can be used to stream *any* color data from a computer to supported LED strips (data rate limited by serial throughput).
+In addition to ambilight setups, the protocol can be used to stream *any* color data from a computer to supported LED strips.
 
 ## Configuration
 
@@ -19,7 +19,7 @@ Additional settings allow for adjusting:
 - Serial speed
 - Serial timeout length
 
-There are also optional settings to configure a dedicated ground pin and to put the Arduino into a "calibration" mode, where all LED colors match the first LED.
+There are also optional settings to clear the LEDs on reset, configure a dedicated ground pin, and to put the Arduino into a "calibration" mode, where all LED colors match the first LED.
 
 Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using [Patrick Siegler's](https://github.com/psieg/) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack).
 

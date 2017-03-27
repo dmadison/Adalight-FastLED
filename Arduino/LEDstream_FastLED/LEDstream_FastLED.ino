@@ -24,6 +24,7 @@ static const unsigned long
 					    // (150 seconds)
     
 // --- Optional Settings (uncomment to add)
+//#define CLEAR_ON_START     // LEDs are cleared on reset
 //#define GROUND_PIN 10      // additional grounding pin (optional)
 //#define CALIBRATE          // sets all LEDs to the color of the first
 
@@ -64,6 +65,10 @@ void setup(){
 
   FastLED.addLeds<LED_TYPE, Led_Pin, COLOR_ORDER>(leds, Num_Leds);
   FastLED.setBrightness(Brightness);
+
+  #ifdef CLEAR_ON_START
+    FastLED.show();
+  #endif
 
   Serial.begin(SerialSpeed);
 

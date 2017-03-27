@@ -72,9 +72,6 @@ void setup(){
 
   Serial.begin(SerialSpeed);
 
-  Serial.println(Num_Leds);
-  Serial.println(Led_Pin);
-
   adalight();
 }
 

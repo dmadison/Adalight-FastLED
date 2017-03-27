@@ -196,5 +196,6 @@ void adalight(){
 
 void loop()
 {
-	// Not used. See note in adalight() function.
+	// loop() is avoided as even that small bit of function overhead
+	// has a measurable impact on this code's overall throughput.
 }

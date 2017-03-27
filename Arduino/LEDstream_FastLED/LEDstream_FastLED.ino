@@ -161,7 +161,7 @@ void adalight(){
 					}
 					bytesRemaining--;
 				}
-				else {
+				if(bytesRemaining == 0) {
 					// End of data -- issue latch:
 					mode = MODE_HEADER; // Begin next header search
 					FastLED.show();

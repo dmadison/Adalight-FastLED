@@ -4,24 +4,27 @@
  * library (http://fastled.io) for driving led strips.
  * 
  * http://github.com/dmadison/Adalight-FastLED
- * Last Updated: 2016-12-21
+ * Last Updated: 2017-03-27
  */
 
-// -- General Settings
-#define NUM_LEDS     80      // strip length
-#define LED_PIN      6       // Arduino data output pin
-#define BRIGHTNESS   255     // maximum brightness
+// --- General Settings
+static const uint8_t 
+	Num_Leds   =  80,     // strip length
+	Led_Pin    =  6,      // Arduino data output pin
+	Brightness =  255;    // maximum brightness
 
 // --- FastLED Setings
 #define LED_TYPE     WS2812B // led strip type for FastLED
 #define COLOR_ORDER  GRB     // color order for bitbang
 
 // --- Serial Settings
-#define SPEED        115200  // serial port speed, max available
-static const unsigned long   // time before LEDs are shut off, if no data
-    serialTimeout  = 150000; //    150 seconds
+static const unsigned long
+	SerialSpeed    = 115200, // serial port speed, max available  
+	SerialTimeout  = 150000; // time before LEDs are shut off, if no data
+					    // (150 seconds)
     
-// -- Optional Settings (uncomment to add)
+// --- Optional Settings (uncomment to add)
+//#define CLEAR_ON_START     // LEDs are cleared on reset
 //#define GROUND_PIN 10      // additional grounding pin (optional)
 //#define CALIBRATE          // sets all LEDs to the color of the first
 
@@ -29,7 +32,7 @@ static const unsigned long   // time before LEDs are shut off, if no data
 
 #include <FastLED.h>
 
-CRGB leds[NUM_LEDS];
+CRGB leds[Num_Leds];
 uint8_t * ledsRaw = (uint8_t *)leds;
 
 // A 'magic word' (along with LED count & checksum) precedes each block
@@ -60,10 +63,14 @@ void setup(){
     digitalWrite(GROUND_PIN, LOW);
   #endif
 
-  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-  FastLED.setBrightness(BRIGHTNESS);
+  FastLED.addLeds<LED_TYPE, Led_Pin, COLOR_ORDER>(leds, Num_Leds);
+  FastLED.setBrightness(Brightness);
 
-  Serial.begin(SPEED);
+  #ifdef CLEAR_ON_START
+    FastLED.show();
+  #endif
+
+  Serial.begin(SerialSpeed);
 
   adalight();
 }
@@ -83,16 +90,16 @@ void adalight(){
     mode          = MODE_HEADER,
     hi, lo, chk, i;
   int16_t
-    bytesBuffered = 0,
     c;
-  int32_t
-    bytesRemaining;
+  uint16_t
+    bytesBuffered = 0;
+  uint32_t
+    bytesRemaining,
+    outPos;
   unsigned long
     lastByteTime,
     lastAckTime,
     t;
-  int32_t
-    outPos = 0;
 
   Serial.print("Ada\n"); // Send ACK string to host
 
@@ -119,8 +126,8 @@ void adalight(){
         lastAckTime = t; // Reset counter
       }
       // If no data received for an extended time, turn off all LEDs.
-      if((t - lastByteTime) > serialTimeout) {
-        memset(leds, 0,  NUM_LEDS * sizeof(struct CRGB)); //filling Led array by zeroes
+      if((t - lastByteTime) > SerialTimeout) {
+        memset(leds, 0,  Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
         FastLED.show();
         lastByteTime = t; // Reset counter
       }
@@ -145,7 +152,7 @@ void adalight(){
             bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
             bytesBuffered -= 3;
             outPos = 0;
-            memset(leds, 0,  NUM_LEDS * sizeof(struct CRGB));
+            memset(leds, 0,  Num_Leds * sizeof(struct CRGB));
             mode           = MODE_DATA; // Proceed to latch wait mode
           } 
           else {

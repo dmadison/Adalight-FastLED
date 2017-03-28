@@ -171,16 +171,16 @@ void adalight(){
 					if (outPos < sizeof(leds)){
 						#ifdef CALIBRATE
 							if(outPos < 3)
-								ledsRaw[outPos++] = buffer[indexOut++];
+								ledsRaw[outPos++] = buffer[indexOut];
 							else{
 								ledsRaw[outPos] = ledsRaw[outPos%3]; // Sets RGB data to first LED color
 								outPos++;
-								indexOut++;
 							}
 						#else
-							ledsRaw[outPos++] = buffer[indexOut++]; // Issue next byte
+							ledsRaw[outPos++] = buffer[indexOut]; // Issue next byte
 						#endif
 					}
+					indexOut++;
 					bytesBuffered--;
 					bytesRemaining--;
 				}

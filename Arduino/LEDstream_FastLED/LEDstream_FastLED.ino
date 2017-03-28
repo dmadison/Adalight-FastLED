@@ -86,9 +86,10 @@ void adalight(){
 		hi, lo, chk;
 	int16_t
 		c;
-	uint32_t
-		bytesRemaining,
+	uint16_t
 		outPos;
+	uint32_t
+		bytesRemaining;
 	unsigned long
 		lastByteTime,
 		lastAckTime,

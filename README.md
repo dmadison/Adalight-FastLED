@@ -1,3 +1,7 @@
+# Adalight-FastLED
+
+![Adalight-Rainbow](http://i.imgur.com/sHygxq9.jpg)
+
 ## Synopsis
 
 This project modifies the Adalight protocol to use [FastLED](https://github.com/FastLED/FastLED) ([fastled.io](http://fastled.io)). This expands Adalight to, in theory, work with *[any supported FastLED strip](https://github.com/FastLED/FastLED/wiki/Chipset-reference)* including WS2812B (aka Adafruit NeoPixels).

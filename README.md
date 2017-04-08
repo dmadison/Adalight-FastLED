@@ -1,8 +1,14 @@
+# Adalight-FastLED
+
+![Adalight-Rainbow](http://i.imgur.com/sHygxq9.jpg)
+
 ## Synopsis
 
 This project modifies the Adalight protocol to use [FastLED](https://github.com/FastLED/FastLED) ([fastled.io](http://fastled.io)). This expands Adalight to, in theory, work with *[any supported FastLED strip](https://github.com/FastLED/FastLED/wiki/Chipset-reference)* including WS2812B (aka Adafruit NeoPixels).
 
-In addition to ambilight setups, the protocol can be used to stream *any* color data from a computer to supported LED strips.
+In addition to ambilight setups, the protocol can be used to stream *any* color data over serial from a computer to supported LED strips.
+
+For this sketch to work, you'll need to have a copy of the FastLED library. You can download FastLED [from GitHub](https://github.com/FastLED/FastLED) or through the libraries manager of the Arduino IDE. This program was writen using FastLED 3.1.3 - note that earlier versions of FastLED are untested and may not work properly.
 
 ## Configuration
 
@@ -29,7 +35,7 @@ I've only tested the code with the WS2812B strips I have on hand, but so far it 
 
 ## Credits and Contributions
 
-Thanks to Adafruit for the initial code and the Adalight protocol. The base for the original FastLED modifications is [this gist](https://gist.github.com/jamesabruce/09d79a56d270ed37870c) by [James Bruce](https://github.com/jamesabruce). Thanks James!
+Thanks to Adafruit for the initial code and for developing the Adalight protocol. The base for the original FastLED modifications is [this gist](https://gist.github.com/jamesabruce/09d79a56d270ed37870c) by [James Bruce](https://github.com/jamesabruce). Thanks James!
 
 Pull requests to improve this software are always welcome!
 

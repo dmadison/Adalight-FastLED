@@ -152,6 +152,7 @@ void adalight(){
 						#ifdef CALIBRATE
 							if(outPos < 3)
 								ledsRaw[outPos++] = c;
+
 							else{
 								ledsRaw[outPos] = ledsRaw[outPos%3]; // Sets RGB data to first LED color
 								outPos++;

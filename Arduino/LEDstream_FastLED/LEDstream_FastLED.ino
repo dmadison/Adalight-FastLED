@@ -4,7 +4,7 @@
  * library (http://fastled.io) for driving led strips.
  * 
  * http://github.com/dmadison/Adalight-FastLED
- * Last Updated: 2017-03-27
+ * Last Updated: 2017-04-08
  */
 
 // --- General Settings
@@ -152,7 +152,6 @@ void adalight(){
 						#ifdef CALIBRATE
 							if(outPos < 3)
 								ledsRaw[outPos++] = c;
-
 							else{
 								ledsRaw[outPos] = ledsRaw[outPos%3]; // Sets RGB data to first LED color
 								outPos++;

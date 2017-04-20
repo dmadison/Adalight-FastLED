@@ -87,8 +87,9 @@ void setup(){
 }
 
 void adalight(){ 
+	static uint8_t
+		mode = MODE_HEADER;
 	uint8_t
-		mode = MODE_HEADER,
 		headPos,
 		hi, lo, chk;
 	int16_t

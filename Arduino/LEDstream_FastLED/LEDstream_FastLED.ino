@@ -89,19 +89,20 @@ void setup(){
 void adalight(){ 
 	static uint8_t
 		mode = MODE_HEADER;
-	uint8_t
+	static uint8_t
 		headPos,
 		hi, lo, chk;
 	int16_t
 		c;
-	uint16_t
+	static uint16_t
 		outPos;
-	uint32_t
+	static uint32_t
 		bytesRemaining;
 	unsigned long
-		lastByteTime,
-		lastAckTime,
 		t;
+	static unsigned long
+		lastByteTime,
+		lastAckTime;
 
 	Serial.print("Ada\n"); // Send ACK string to host
 

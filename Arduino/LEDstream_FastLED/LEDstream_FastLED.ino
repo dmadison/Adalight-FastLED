@@ -27,8 +27,9 @@ static const unsigned long
 //#define CLEAR_ON_START     // LEDs are cleared on reset
 //#define GROUND_PIN 10      // additional grounding pin (optional)
 //#define CALIBRATE          // sets all LEDs to the color of the first
-//#define DEBUG_LED 13       // turns on the Arduino's built-in LED
-                             //   if the magic word + checksum match
+
+// --- Debug Settings (uncomment to add)
+//#define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
 
 // --------------------------------------------------------------------
 
@@ -62,6 +63,16 @@ static const uint8_t magic[] = {
 
 #define MODE_HEADER 0
 #define MODE_DATA   1
+
+// Debug statement initialized
+#ifdef DEBUG_LED
+	#define ON  1
+	#define OFF 0
+
+	#define D_LED(x) do {digitalWrite(DEBUG_LED, x);} while(0)
+#else
+	#define D_LED(x)
+#endif
 
 void setup(){
 	#ifdef GROUND_PIN
@@ -143,10 +154,7 @@ void adalight(){
 							if(chk == (hi ^ lo ^ 0x55)) {
 								// Checksum looks valid. Get 16-bit LED count, add 1
 								// (# LEDs is always > 0) and multiply by 3 for R,G,B.
-								#ifdef DEBUG_LED
-									digitalWrite(DEBUG_LED, HIGH);
-								#endif
-
+								D_LED(ON);
 								bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
 								outPos = 0;
 								memset(leds, 0, Num_Leds * sizeof(struct CRGB));
@@ -179,10 +187,7 @@ void adalight(){
 					// End of data -- issue latch:
 					mode = MODE_HEADER; // Begin next header search
 					FastLED.show();
-
-					#ifdef DEBUG_LED
-						digitalWrite(DEBUG_LED, LOW);
-					#endif
+					D_LED(OFF);
 				}
 				break;
 			} // end switch

@@ -222,12 +222,13 @@ void timeouts(){
 	if((t - lastAckTime) > 1000) {
 		Serial.print("Ada\n"); // Send ACK string to host
 		lastAckTime = t; // Reset counter
-	}
-	// If no data received for an extended time, turn off all LEDs.
-	if((t - lastByteTime) > SerialTimeout) {
-		memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
-		FastLED.show();
-		lastByteTime = t; // Reset counter
+
+		// If no data received for an extended time, turn off all LEDs.
+		if((t - lastByteTime) > SerialTimeout) {
+			memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
+			FastLED.show();
+			lastByteTime = t; // Reset counter
+		}
 	}
 }
 

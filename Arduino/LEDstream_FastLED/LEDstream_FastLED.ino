@@ -127,10 +127,9 @@ void loop(){
 }
 
 void adalight(){ 
-	// Implementation is a simple finite-state machine.
-	// Regardless of mode, check for serial input each time:
-	t = millis();
+	t = millis(); // Save current time
 
+	// If there is new serial data
 	if((c = Serial.read()) >= 0){
 		lastByteTime = lastAckTime = t; // Reset timeout counters
 
@@ -144,6 +143,7 @@ void adalight(){
 		}
 	}
 	else {
+		// No new data
 		timeouts();
 	}
 }
@@ -154,10 +154,12 @@ void headerMode(){
 		hi, lo, chk;
 
 	if(headPos < MAGICSIZE){
+		// Check if magic word matches
 		if(c == magic[headPos]) {headPos++;}
 		else {headPos = 0;}
 	}
 	else{
+		// Magic word matches! Now verify checksum
 		switch(headPos){
 			case HICHECK:
 				hi = c;
@@ -185,6 +187,7 @@ void headerMode(){
 }
 
 void dataMode(){
+	// If LED data is not full
 	if (outPos < sizeof(leds)){
 		dataSet();
 	}

@@ -189,12 +189,11 @@ void headerMode(){
 }
 
 void dataMode(){
-	if(bytesRemaining > 0) {
-		if (outPos < sizeof(leds)){
-			dataSet();
-		}
-		bytesRemaining--;
+	if (outPos < sizeof(leds)){
+		dataSet();
 	}
+	bytesRemaining--;
+ 
 	if(bytesRemaining == 0) {
 		// End of data -- issue latch:
 		mode = MODE_HEADER; // Begin next header search

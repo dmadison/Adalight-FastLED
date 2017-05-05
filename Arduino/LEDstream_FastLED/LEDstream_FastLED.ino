@@ -158,8 +158,8 @@ void headerMode(){
 		hi, lo, chk;
 
 	if(headPos < MAGICSIZE){
-		if(c == magic[headPos]) headPos++;
-		else headPos = 0;
+		if(c == magic[headPos]) {headPos++;}
+		else {headPos = 0;}
 	}
 	else{
 		switch(headPos){

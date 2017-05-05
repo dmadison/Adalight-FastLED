@@ -27,7 +27,7 @@ Additional settings allow for adjusting:
 
 There are also optional settings to clear the LEDs on reset, configure a dedicated ground pin, and to put the Arduino into a "calibration" mode, where all LED colors match the first LED.
 
-Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using [Patrick Siegler's](https://github.com/psieg/) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack).
+Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using [Patrick Siegler's](https://github.com/psieg/) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack/releases).
 
 ## Issues and LED-types
 

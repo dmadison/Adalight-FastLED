@@ -65,6 +65,19 @@ static const uint8_t magic[] = {
 #define MODE_HEADER 0
 #define MODE_DATA   1
 
+static uint8_t
+	mode = MODE_HEADER;
+static int16_t
+	c;
+static uint16_t
+	outPos;
+static uint32_t
+	bytesRemaining;
+static unsigned long
+	t,
+	lastByteTime,
+	lastAckTime;
+
 // Debug macros initialized
 #ifdef DEBUG_LED
 	#define ON  1
@@ -109,23 +122,6 @@ void setup(){
 }
 
 void adalight(){ 
-	static uint8_t
-		mode = MODE_HEADER;
-	static uint8_t
-		headPos,
-		hi, lo, chk;
-	int16_t
-		c;
-	static uint16_t
-		outPos;
-	static uint32_t
-		bytesRemaining;
-	unsigned long
-		t;
-	static unsigned long
-		lastByteTime,
-		lastAckTime;
-
 	Serial.print("Ada\n"); // Send ACK string to host
 
 	lastByteTime = lastAckTime = millis();
@@ -134,95 +130,109 @@ void adalight(){
 	// has a measurable impact on this code's overall throughput.
 
 	for(;;) {
-		
 		// Implementation is a simple finite-state machine.
 		// Regardless of mode, check for serial input each time:
 		t = millis();
-		
+
 		if((c = Serial.read()) >= 0){
 			lastByteTime = lastAckTime = t; // Reset timeout counters
-			
+
 			switch(mode) {
-	
-			case MODE_HEADER:
-
-				if(headPos < MAGICSIZE){
-					if(c == magic[headPos]) headPos++;
-					else headPos = 0;
-				}
-				else{
-					switch(headPos){
-						case HICHECK:
-							hi = c;
-							headPos++;
-							break;
-						case LOCHECK:
-							lo = c;
-							headPos++;
-							break;
-						case CHECKSUM:
-							chk = c;
-							if(chk == (hi ^ lo ^ 0x55)) {
-								// Checksum looks valid. Get 16-bit LED count, add 1
-								// (# LEDs is always > 0) and multiply by 3 for R,G,B.
-								D_LED(ON);
-								bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
-								outPos = 0;
-								memset(leds, 0, Num_Leds * sizeof(struct CRGB));
-								mode = MODE_DATA; // Proceed to latch wait mode
-							}
-							headPos = 0; // Reset header position regardless of checksum result
-							break;
-					}
-				}
-				break;
-	
-			case MODE_DATA:
-
-				if(bytesRemaining > 0) {
-					if (outPos < sizeof(leds)){
-						#ifdef CALIBRATE
-							if(outPos < 3)
-								ledsRaw[outPos++] = c;
-							else{
-								ledsRaw[outPos] = ledsRaw[outPos%3]; // Sets RGB data to first LED color
-								outPos++;
-							}
-						#else
-							ledsRaw[outPos++] = c; // Issue next byte
-						#endif
-					}
-					bytesRemaining--;
-				}
-				if(bytesRemaining == 0) {
-					// End of data -- issue latch:
-					mode = MODE_HEADER; // Begin next header search
-					FastLED.show();
-					D_FPS;
-					D_LED(OFF);
-				}
-				break;
-			} // end switch
-		} // end serial if
+				case MODE_HEADER:
+					headerMode();
+					break;
+				case MODE_DATA:
+					dataMode();
+					break;
+			}
+		}
 		else {
-			// No data received. If this persists, send an ACK packet
-			// to host once every second to alert it to our presence.
-			if((t - lastAckTime) > 1000) {
-				Serial.print("Ada\n"); // Send ACK string to host
-				lastAckTime = t; // Reset counter
-			}
-			// If no data received for an extended time, turn off all LEDs.
-			if((t - lastByteTime) > SerialTimeout) {
-				memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
-				FastLED.show();
-				lastByteTime = t; // Reset counter
-			}
-		} // end else
-	} // end for(;;)
+			timeouts();
+		}
+	}
 }
 
-void loop()
-{
+void headerMode(){
+	static uint8_t
+		headPos,
+		hi, lo, chk;
+
+	if(headPos < MAGICSIZE){
+		if(c == magic[headPos]) headPos++;
+		else headPos = 0;
+	}
+	else{
+		switch(headPos){
+			case HICHECK:
+				hi = c;
+				headPos++;
+				break;
+			case LOCHECK:
+				lo = c;
+				headPos++;
+				break;
+			case CHECKSUM:
+				chk = c;
+				if(chk == (hi ^ lo ^ 0x55)) {
+					// Checksum looks valid. Get 16-bit LED count, add 1
+					// (# LEDs is always > 0) and multiply by 3 for R,G,B.
+					D_LED(ON);
+					bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
+					outPos = 0;
+					memset(leds, 0, Num_Leds * sizeof(struct CRGB));
+					mode = MODE_DATA; // Proceed to latch wait mode
+				}
+				headPos = 0; // Reset header position regardless of checksum result
+				break;
+		}
+	}
+}
+
+void dataMode(){
+	if(bytesRemaining > 0) {
+		if (outPos < sizeof(leds)){
+			dataSet();
+		}
+		bytesRemaining--;
+	}
+	if(bytesRemaining == 0) {
+		// End of data -- issue latch:
+		mode = MODE_HEADER; // Begin next header search
+		FastLED.show();
+		D_FPS;
+		D_LED(OFF);
+	}
+}
+
+void dataSet(){
+	#ifdef CALIBRATE
+		if(outPos < 3)
+			ledsRaw[outPos++] = c;
+		else{
+			ledsRaw[outPos] = ledsRaw[outPos%3]; // Sets RGB data to first LED color
+			outPos++;
+		}
+	#else
+		ledsRaw[outPos++] = c; // Issue next byte
+	#endif
+}
+
+void timeouts(){
+	// No data received. If this persists, send an ACK packet
+	// to host once every second to alert it to our presence.
+	if((t - lastAckTime) > 1000) {
+		Serial.print("Ada\n"); // Send ACK string to host
+		lastAckTime = t; // Reset counter
+	}
+	// If no data received for an extended time, turn off all LEDs.
+	if((t - lastByteTime) > SerialTimeout) {
+		memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
+		FastLED.show();
+		lastByteTime = t; // Reset counter
+	}
+}
+
+void loop(){
 	// loop() is avoided as even that small bit of function overhead
 	// has a measurable impact on this code's overall throughput.
 }

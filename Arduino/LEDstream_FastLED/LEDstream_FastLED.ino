@@ -30,6 +30,7 @@ static const unsigned long
 
 // --- Debug Settings (uncomment to add)
 //#define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
+//#define DEBUG_FPS 8        // enables a pulse on LED latch
 
 // --------------------------------------------------------------------
 
@@ -64,7 +65,7 @@ static const uint8_t magic[] = {
 #define MODE_HEADER 0
 #define MODE_DATA   1
 
-// Debug statement initialized
+// Debug macros initialized
 #ifdef DEBUG_LED
 	#define ON  1
 	#define OFF 0
@@ -72,6 +73,12 @@ static const uint8_t magic[] = {
 	#define D_LED(x) do {digitalWrite(DEBUG_LED, x);} while(0)
 #else
 	#define D_LED(x)
+#endif
+
+#ifdef DEBUG_FPS
+	#define D_FPS do {digitalWrite(DEBUG_FPS, HIGH); digitalWrite(DEBUG_FPS, LOW);} while (0)
+#else
+	#define D_FPS
 #endif
 
 void setup(){
@@ -83,6 +90,10 @@ void setup(){
 	#ifdef DEBUG_LED
 		pinMode(DEBUG_LED, OUTPUT);
 		digitalWrite(DEBUG_LED, LOW);
+	#endif
+
+	#ifdef DEBUG_FPS
+		pinMode(DEBUG_FPS, OUTPUT);
 	#endif
 
 	FastLED.addLeds<LED_TYPE, Led_Pin, COLOR_ORDER>(leds, Num_Leds);
@@ -187,6 +198,7 @@ void adalight(){
 					// End of data -- issue latch:
 					mode = MODE_HEADER; // Begin next header search
 					FastLED.show();
+					D_FPS;
 					D_LED(OFF);
 				}
 				break;

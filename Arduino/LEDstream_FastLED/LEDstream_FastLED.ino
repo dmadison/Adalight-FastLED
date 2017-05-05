@@ -117,38 +117,34 @@ void setup(){
 	#endif
 
 	Serial.begin(SerialSpeed);
+	Serial.print("Ada\n"); // Send ACK string to host
 
+	lastByteTime = lastAckTime = millis(); // Set initial counters
+}
+
+void loop(){
 	adalight();
 }
 
 void adalight(){ 
-	Serial.print("Ada\n"); // Send ACK string to host
+	// Implementation is a simple finite-state machine.
+	// Regardless of mode, check for serial input each time:
+	t = millis();
 
-	lastByteTime = lastAckTime = millis();
+	if((c = Serial.read()) >= 0){
+		lastByteTime = lastAckTime = t; // Reset timeout counters
 
-	// loop() is avoided as even that small bit of function overhead
-	// has a measurable impact on this code's overall throughput.
-
-	for(;;) {
-		// Implementation is a simple finite-state machine.
-		// Regardless of mode, check for serial input each time:
-		t = millis();
-
-		if((c = Serial.read()) >= 0){
-			lastByteTime = lastAckTime = t; // Reset timeout counters
-
-			switch(mode) {
-				case MODE_HEADER:
-					headerMode();
-					break;
-				case MODE_DATA:
-					dataMode();
-					break;
-			}
+		switch(mode) {
+			case MODE_HEADER:
+				headerMode();
+				break;
+			case MODE_DATA:
+				dataMode();
+				break;
 		}
-		else {
-			timeouts();
-		}
+	}
+	else {
+		timeouts();
 	}
 }
 
@@ -230,9 +226,4 @@ void timeouts(){
 			lastByteTime = t; // Reset counter
 		}
 	}
-}
-
-void loop(){
-	// loop() is avoided as even that small bit of function overhead
-	// has a measurable impact on this code's overall throughput.
 }

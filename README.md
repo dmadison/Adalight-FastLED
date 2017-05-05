@@ -27,7 +27,19 @@ Additional settings allow for adjusting:
 
 There are also optional settings to clear the LEDs on reset, configure a dedicated ground pin, and to put the Arduino into a "calibration" mode, where all LED colors match the first LED.
 
-Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using [Patrick Siegler's](https://github.com/psieg/) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack).
+Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using [Patrick Siegler's](https://github.com/psieg/) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack/releases).
+
+## Debug Settings
+
+The code includes two debugging options:
+- DEBUG_LED
+- DEBUG_FPS
+
+`DEBUG_LED` will turn on the Arduino's built-in LED on a successful header match, and off when the LEDs latch. If your LEDs aren't working, this will help confirm that the Arduino is receiving properly formatted serial data.
+
+`DEBUG_FPS`, similarly, will toggle a given pin when the LEDs latch. This is useful for measuring framerate with external hardware, like a logic analyzer.
+
+To enable either of these settings, uncomment their respective '#define' lines.
 
 ## Issues and LED-types
 

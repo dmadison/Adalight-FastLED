@@ -1,6 +1,6 @@
 /* LEDstream_FastLED
  * 
- * Modified version of Adalight protocol that uses the FastLED
+ * Modified version of Adalight that uses the FastLED
  * library (http://fastled.io) for driving led strips.
  * 
  * http://github.com/dmadison/Adalight-FastLED

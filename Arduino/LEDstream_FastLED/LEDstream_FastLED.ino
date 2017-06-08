@@ -39,8 +39,8 @@ static const uint16_t
 	SerialTimeout  = 150;    // time before LEDs are shut off if no data (in seconds)
 
 // --- Optional Settings (uncomment to add)
-//#define CLEAR_ON_START     // LEDs are cleared on reset
 #define SERIAL_FLUSH         // Serial buffer cleared on LED latch
+//#define CLEAR_ON_START     // LEDs are cleared on reset
 //#define GROUND_PIN 10      // additional grounding pin (optional)
 //#define CALIBRATE          // sets all LEDs to the color of the first
 

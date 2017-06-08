@@ -78,11 +78,8 @@ static const uint8_t magic[] = {
 #define LOCHECK    (MAGICSIZE + 1)
 #define CHECKSUM   (MAGICSIZE + 2)
 
-#define MODE_HEADER 0
-#define MODE_DATA   1
+enum processModes_t {Header, Data} mode = Header;
 
-static uint8_t
-	mode = MODE_HEADER;
 static int16_t
 	c;
 static uint16_t
@@ -150,10 +147,10 @@ void adalight(){
 		lastByteTime = lastAckTime = t; // Reset timeout counters
 
 		switch(mode) {
-			case MODE_HEADER:
+			case Header:
 				headerMode();
 				break;
-			case MODE_DATA:
+			case Data:
 				dataMode();
 				break;
 		}
@@ -194,7 +191,7 @@ void headerMode(){
 					bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
 					outPos = 0;
 					memset(leds, 0, Num_Leds * sizeof(struct CRGB));
-					mode = MODE_DATA; // Proceed to latch wait mode
+					mode = Data; // Proceed to latch wait mode
 				}
 				headPos = 0; // Reset header position regardless of checksum result
 				break;
@@ -211,7 +208,7 @@ void dataMode(){
  
 	if(bytesRemaining == 0) {
 		// End of data -- issue latch:
-		mode = MODE_HEADER; // Begin next header search
+		mode = Header; // Begin next header search
 		FastLED.show();
 		D_FPS;
 		D_LED(OFF);

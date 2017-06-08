@@ -242,6 +242,7 @@ void timeouts(){
 		if((t - lastByteTime) > SerialTimeout * 1000) {
 			memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
 			FastLED.show();
+			mode = Header;
 			lastByteTime = t; // Reset counter
 		}
 	}

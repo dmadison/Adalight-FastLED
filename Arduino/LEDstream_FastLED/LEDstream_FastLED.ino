@@ -40,6 +40,7 @@ static const uint16_t
 
 // --- Optional Settings (uncomment to add)
 //#define CLEAR_ON_START     // LEDs are cleared on reset
+//#define SERIAL_FLUSH       // Serial buffer cleared on LED latch
 //#define GROUND_PIN 10      // additional grounding pin (optional)
 //#define CALIBRATE          // sets all LEDs to the color of the first
 
@@ -214,6 +215,9 @@ void dataMode(){
 		FastLED.show();
 		D_FPS;
 		D_LED(OFF);
+		#ifdef SERIAL_FLUSH
+			serialFlush();
+		#endif
 	}
 }
 
@@ -243,5 +247,11 @@ void timeouts(){
 			FastLED.show();
 			lastByteTime = t; // Reset counter
 		}
+	}
+}
+
+void serialFlush(){
+	while(Serial.available() > 0) {
+		byte r = Serial.read();
 	}
 }

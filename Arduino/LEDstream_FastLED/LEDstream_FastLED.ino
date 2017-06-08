@@ -7,8 +7,9 @@
  */
 
 // --- General Settings
-static const uint8_t 
-	Num_Leds   =  80,        // strip length
+static const uint16_t 
+	Num_Leds   =  80;        // strip length
+static const uint8_t
 	Led_Pin    =  6,         // Arduino data output pin
 	Brightness =  255;       // maximum brightness
 

@@ -10,7 +10,7 @@ In addition to ambilight setups, the protocol can be used to stream *any* color 
 
 For this sketch to work, you'll need to have a copy of the FastLED library. You can download FastLED [from GitHub](https://github.com/FastLED/FastLED) or through the libraries manager of the Arduino IDE. This program was writen using FastLED 3.1.3 - note that earlier versions of FastLED are untested and may not work properly.
 
-## Configuration
+## Basic Setup
 
 Open the LEDstream_FastLED file in the Arduino IDE and customize the settings at the top for your setup. You will need to change:
 
@@ -18,16 +18,18 @@ Open the LEDstream_FastLED file in the Arduino IDE and customize the settings at
 - LED data pin
 - LED type
 
-Additional settings allow for adjusting:
+Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using [Patrick Siegler's](https://github.com/psieg/) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack/releases).
+
+## Additional Settings
+
+There are additional settings to allow for adjusting:
 
 - Max brightness
 - LED color order
 - Serial speed
 - Serial timeout length
 
-There are also optional settings to clear the LEDs on reset, configure a dedicated ground pin, and to put the Arduino into a "calibration" mode, where all LED colors match the first LED.
-
-Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using [Patrick Siegler's](https://github.com/psieg/) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack/releases).
+There are also optional settings to clear the LEDs on reset, configure a dedicated ground pin, and to put the Arduino into a "calibration" mode, where all LED colors match the first LED. To help with flickering, the option to flush the serial buffer after every latch is enabled by default.
 
 ## Debug Settings
 

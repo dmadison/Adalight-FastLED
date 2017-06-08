@@ -34,7 +34,7 @@ static const uint8_t
 
 // --- Serial Settings
 static const unsigned long
-	SerialSpeed    = 115200; // serial port speed, max available
+	SerialSpeed    = 115200; // serial port speed
 static const uint16_t
 	SerialTimeout  = 150;    // time before LEDs are shut off if no data (in seconds)
 

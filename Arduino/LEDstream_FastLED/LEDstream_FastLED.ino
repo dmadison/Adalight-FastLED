@@ -4,7 +4,6 @@
  * library (http://fastled.io) for driving led strips.
  * 
  * http://github.com/dmadison/Adalight-FastLED
- * Last Updated: 2017-05-05
  */
 
 // --- General Settings

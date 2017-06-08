@@ -10,6 +10,8 @@ In addition to ambilight setups, the protocol can be used to stream *any* color 
 
 For this sketch to work, you'll need to have a copy of the FastLED library. You can download FastLED [from GitHub](https://github.com/FastLED/FastLED) or through the libraries manager of the Arduino IDE. This program was writen using FastLED 3.1.3 - note that earlier versions of FastLED are untested and may not work properly.
 
+For more information on my own ambilight setup, see [the project page](http://www.partsnotincluded.com/projects/ambilight/) on [PartsNotIncluded.com](http://www.partsnotincluded.com/).
+
 ## Basic Setup
 
 Open the LEDstream_FastLED file in the Arduino IDE and customize the settings at the top for your setup. You will need to change:

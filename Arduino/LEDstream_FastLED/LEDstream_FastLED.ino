@@ -1,15 +1,30 @@
 /* LEDstream_FastLED
  * 
- * Modified version of Adalight protocol that uses the FastLED
+ * Modified version of Adalight that uses the FastLED
  * library (http://fastled.io) for driving led strips.
  * 
  * http://github.com/dmadison/Adalight-FastLED
- * Last Updated: 2017-05-05
+ *
+ * --------------------------------------------------------------------
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * --------------------------------------------------------------------
  */
 
 // --- General Settings
-static const uint8_t 
-	Num_Leds   =  80,        // strip length
+static const uint16_t 
+	Num_Leds   =  80;        // strip length
+static const uint8_t
 	Led_Pin    =  6,         // Arduino data output pin
 	Brightness =  255;       // maximum brightness
 
@@ -19,11 +34,12 @@ static const uint8_t
 
 // --- Serial Settings
 static const unsigned long
-	SerialSpeed    = 115200; // serial port speed, max available
+	SerialSpeed    = 115200; // serial port speed
 static const uint16_t
 	SerialTimeout  = 150;    // time before LEDs are shut off if no data (in seconds)
 
 // --- Optional Settings (uncomment to add)
+#define SERIAL_FLUSH         // Serial buffer cleared on LED latch
 //#define CLEAR_ON_START     // LEDs are cleared on reset
 //#define GROUND_PIN 10      // additional grounding pin (optional)
 //#define CALIBRATE          // sets all LEDs to the color of the first
@@ -62,11 +78,8 @@ static const uint8_t magic[] = {
 #define LOCHECK    (MAGICSIZE + 1)
 #define CHECKSUM   (MAGICSIZE + 2)
 
-#define MODE_HEADER 0
-#define MODE_DATA   1
+enum processModes_t {Header, Data} mode = Header;
 
-static uint8_t
-	mode = MODE_HEADER;
 static int16_t
 	c;
 static uint16_t
@@ -134,10 +147,10 @@ void adalight(){
 		lastByteTime = lastAckTime = t; // Reset timeout counters
 
 		switch(mode) {
-			case MODE_HEADER:
+			case Header:
 				headerMode();
 				break;
-			case MODE_DATA:
+			case Data:
 				dataMode();
 				break;
 		}
@@ -178,7 +191,7 @@ void headerMode(){
 					bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
 					outPos = 0;
 					memset(leds, 0, Num_Leds * sizeof(struct CRGB));
-					mode = MODE_DATA; // Proceed to latch wait mode
+					mode = Data; // Proceed to latch wait mode
 				}
 				headPos = 0; // Reset header position regardless of checksum result
 				break;
@@ -195,10 +208,13 @@ void dataMode(){
  
 	if(bytesRemaining == 0) {
 		// End of data -- issue latch:
-		mode = MODE_HEADER; // Begin next header search
+		mode = Header; // Begin next header search
 		FastLED.show();
 		D_FPS;
 		D_LED(OFF);
+		#ifdef SERIAL_FLUSH
+			serialFlush();
+		#endif
 	}
 }
 
@@ -226,7 +242,14 @@ void timeouts(){
 		if((t - lastByteTime) > SerialTimeout * 1000) {
 			memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
 			FastLED.show();
+			mode = Header;
 			lastByteTime = t; // Reset counter
 		}
+	}
+}
+
+void serialFlush(){
+	while(Serial.available() > 0) {
+		byte r = Serial.read();
 	}
 }

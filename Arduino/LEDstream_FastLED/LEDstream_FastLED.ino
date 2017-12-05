@@ -36,7 +36,7 @@ static const uint8_t
 static const unsigned long
 	SerialSpeed    = 115200; // serial port speed
 static const uint16_t
-	SerialTimeout  = 150;    // time before LEDs are shut off if no data (in seconds)
+	SerialTimeout  = 150;    // time before LEDs are shut off if no data (in seconds), 0 to disable
 
 // --- Optional Settings (uncomment to add)
 #define SERIAL_FLUSH         // Serial buffer cleared on LED latch
@@ -239,7 +239,7 @@ void timeouts(){
 		lastAckTime = t; // Reset counter
 
 		// If no data received for an extended time, turn off all LEDs.
-		if((t - lastByteTime) >= (uint32_t) SerialTimeout * 1000) {
+		if(SerialTimeout != 0 && (t - lastByteTime) >= (uint32_t) SerialTimeout * 1000) {
 			memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
 			FastLED.show();
 			mode = Header;

@@ -234,12 +234,12 @@ void dataSet(){
 void timeouts(){
 	// No data received. If this persists, send an ACK packet
 	// to host once every second to alert it to our presence.
-	if((t - lastAckTime) > 1000) {
+	if((t - lastAckTime) >= 1000) {
 		Serial.print("Ada\n"); // Send ACK string to host
 		lastAckTime = t; // Reset counter
 
 		// If no data received for an extended time, turn off all LEDs.
-		if((t - lastByteTime) > SerialTimeout * 1000) {
+		if((t - lastByteTime) >= SerialTimeout * 1000) {
 			memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
 			FastLED.show();
 			mode = Header;

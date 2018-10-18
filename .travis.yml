@@ -1,0 +1,43 @@
+language: C
+env:
+  global:
+    - IDE_VERSION=1.8.1
+matrix:
+  include:
+    - name: "Arduino Uno - WS2812B"
+      env: BOARD=arduino:avr:uno
+
+before_install:
+  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
+  - sleep 3
+  - export DISPLAY=:1.0
+
+  # Install Arduino IDE
+  - wget http://downloads.arduino.cc/arduino-$IDE_VERSION-linux64.tar.xz
+  - tar xf arduino-$IDE_VERSION-linux64.tar.xz
+  - sudo mv arduino-$IDE_VERSION /usr/local/share/arduino
+  - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
+  
+  # Install Libraries
+  - arduino --install-library "FastLED:3.2.0"
+
+  # Sketch Compiling Functions
+  - CYAN="\033[36m"; NOC="\033[0m";
+  - buildSketchPath() {
+      echo -e "\n${CYAN}Building sketch ${1##*/}${NOC}";
+      arduino --verify --board $BOARD "$1";
+    }
+  - buildAllSketches() {
+      for f in $(find $PWD -name '*.ino');
+      do
+        buildSketchPath $f;
+      done;
+    }
+
+script:
+  - buildAllSketches
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change

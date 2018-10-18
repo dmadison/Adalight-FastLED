@@ -25,12 +25,12 @@
 static const uint16_t 
 	Num_Leds   =  80;        // strip length
 static const uint8_t
-	Led_Pin    =  6,         // Arduino data output pin
 	Brightness =  255;       // maximum brightness
 
 // --- FastLED Setings
 #define LED_TYPE     WS2812B // led strip type for FastLED
 #define COLOR_ORDER  GRB     // color order for bitbang
+#define PIN_DATA     6       // led data output pin
 
 // --- Serial Settings
 static const unsigned long
@@ -122,7 +122,7 @@ void setup(){
 		pinMode(DEBUG_FPS, OUTPUT);
 	#endif
 
-	FastLED.addLeds<LED_TYPE, Led_Pin, COLOR_ORDER>(leds, Num_Leds);
+	FastLED.addLeds<LED_TYPE, PIN_DATA, COLOR_ORDER>(leds, Num_Leds);
 	FastLED.setBrightness(Brightness);
 
 	#ifdef CLEAR_ON_START

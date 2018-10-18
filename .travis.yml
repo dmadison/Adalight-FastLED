@@ -4,8 +4,7 @@ env:
     - IDE_VERSION=1.8.1
 matrix:
   include:
-    - name: "Arduino Uno - WS2812B"
-      env: BOARD=arduino:avr:uno
+    - name: "WS2812B"
 
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
@@ -22,7 +21,7 @@ before_install:
   - arduino --install-library "FastLED:3.2.0"
 
   # Sketch Compiling Functions
-  - CYAN="\033[36m"; NOC="\033[0m";
+  - CYAN="\033[36m"; YELLOW="\033[33m"; NOC="\033[0m";
   - buildSketchPath() {
       echo -e "\n${CYAN}Building sketch ${1##*/}${NOC}";
       arduino --verify --board $BOARD "$1";
@@ -33,9 +32,17 @@ before_install:
         buildSketchPath $f;
       done;
     }
+  - buildBoard() {
+      export BOARD="$1";
+      echo -e "\n${YELLOW}Now using board $BOARD${NOC}";
+      buildAllSketches;
+    }
 
 script:
-  - buildAllSketches
+  - buildBoard "arduino:avr:uno"
+  - buildBoard "arduino:avr:nano:cpu=atmega328"
+  - buildBoard "arduino:avr:leonardo"
+  - buildBoard "arduino:avr:mega:cpu=atmega2560"
 
 notifications:
   email:

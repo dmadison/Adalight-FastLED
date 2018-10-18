@@ -93,6 +93,11 @@ static unsigned long
 	lastAckTime;
 
 // Debug macros initialized
+#ifdef DEBUG_CI
+#undef LED_TYPE
+#define LED_TYPE LED_CHIPSET  // Use command line chipset definition
+#endif
+
 #ifdef DEBUG_LED
 	#define ON  1
 	#define OFF 0

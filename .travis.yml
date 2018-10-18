@@ -5,6 +5,9 @@ env:
 matrix:
   include:
     - name: "WS2812B"
+      env: BUILD_FLAGS="-DDEBUG_CI -DLED_CHIPSET=WS2812B"
+    - name: "APA102"
+      env: BUILD_FLAGS="-DDEBUG_CI -DLED_CHIPSET=APA102 -DPIN_CLOCK=7"
 
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
@@ -24,7 +27,7 @@ before_install:
   - CYAN="\033[36m"; YELLOW="\033[33m"; NOC="\033[0m";
   - buildSketchPath() {
       echo -e "\n${CYAN}Building sketch ${1##*/}${NOC}";
-      arduino --verify --board $BOARD "$1";
+      arduino --verify --board $BOARD --pref build.extra_flags="$BUILD_FLAGS" "$1";
     }
   - buildAllSketches() {
       for f in $(find $PWD -name '*.ino');

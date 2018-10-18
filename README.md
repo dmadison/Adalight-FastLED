@@ -1,4 +1,4 @@
-# Adalight-FastLED
+# Adalight-FastLED [![Build Status](https://travis-ci.org/dmadison/Adalight-FastLED.svg?branch=master)](https://travis-ci.org/dmadison/Adalight-FastLED)
 
 ![Adalight-Rainbow](http://i.imgur.com/sHygxq9.jpg)
 

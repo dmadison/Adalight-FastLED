@@ -250,6 +250,6 @@ void timeouts(){
 
 void serialFlush(){
 	while(Serial.available() > 0) {
-		byte r = Serial.read();
+		Serial.read();
 	}
 }

@@ -20,6 +20,8 @@ Open the LEDstream_FastLED file in the Arduino IDE and customize the settings at
 - LED data pin
 - LED type
 
+If you are using a 4-wire LED chipset like APA102, you will need to uncomment the `PIN_CLOCK` line and set that as well.
+
 Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using [Patrick Siegler's](https://github.com/psieg/) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack/releases).
 
 ## Additional Settings

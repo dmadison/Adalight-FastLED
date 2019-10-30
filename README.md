@@ -1,4 +1,4 @@
-# Adalight-FastLED [![Build Status](https://travis-ci.org/dmadison/Adalight-FastLED.svg?branch=master)](https://travis-ci.org/dmadison/Adalight-FastLED)
+# Based on [Adalight-FastLED](https://github.com/dmadison/Adalight-FastLED)
 
 ![Adalight-Rainbow](http://i.imgur.com/sHygxq9.jpg)
 
@@ -32,6 +32,7 @@ There are additional settings to allow for adjusting:
 - LED color order
 - Serial speed
 - Serial timeout length
+- Number of LEDs in the single logical pixel
 
 There are also optional settings to clear the LEDs on reset, configure a dedicated ground pin, and to put the Arduino into a "calibration" mode, where all LED colors match the first LED. To help with flickering, the option to flush the serial buffer after every latch is enabled by default.
 

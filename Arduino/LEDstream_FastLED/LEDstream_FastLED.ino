@@ -19,6 +19,8 @@
  *
  */
 
+#include <Arduino.h>
+
 // --- General Settings
 const uint16_t 
 	Num_Leds   =  80;        // strip length
@@ -81,6 +83,10 @@ int16_t c;  // current byte, must support -1 if no data available
 uint16_t outPos;  // current byte index in the LED array
 uint32_t bytesRemaining;  // count of bytes yet received, set by checksum
 unsigned long t, lastByteTime, lastAckTime;  // millisecond timestamps
+
+void headerMode();
+void dataMode();
+void timeouts();
 
 // Macros initialized
 #ifdef SERIAL_FLUSH

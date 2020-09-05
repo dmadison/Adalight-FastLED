@@ -135,11 +135,7 @@ void setup(){
 	lastByteTime = lastAckTime = millis(); // Set initial counters
 }
 
-void loop(){
-	adalight();
-}
-
-void adalight(){ 
+void loop(){ 
 	t = millis(); // Save current time
 
 	// If there is new serial data

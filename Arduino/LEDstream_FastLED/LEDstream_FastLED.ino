@@ -120,7 +120,7 @@ void setup(){
 		pinMode(DEBUG_FPS, OUTPUT);
 	#endif
 
-	#ifdef PIN_CLOCK
+	#if defined(PIN_CLOCK) && defined(PIN_DATA)
 		FastLED.addLeds<LED_TYPE, PIN_DATA, PIN_CLOCK, COLOR_ORDER>(leds, Num_Leds);
 	#else
 		FastLED.addLeds<LED_TYPE, PIN_DATA, COLOR_ORDER>(leds, Num_Leds);

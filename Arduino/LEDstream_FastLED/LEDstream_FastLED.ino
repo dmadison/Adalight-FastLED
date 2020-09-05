@@ -83,7 +83,14 @@ uint16_t outPos;  // current byte index in the LED array
 uint32_t bytesRemaining;  // count of bytes yet received, set by checksum
 unsigned long t, lastByteTime, lastAckTime;  // millisecond timestamps
 
-// Debug macros initialized
+// Macros initialized
+#ifdef SERIAL_FLUSH
+	#undef SERIAL_FLUSH
+	#define SERIAL_FLUSH while(Serial.available() > 0) { Serial.read(); }
+#else
+	#define SERIAL_FLUSH
+#endif
+
 #ifdef DEBUG_LED
 	#define ON  1
 	#define OFF 0
@@ -211,9 +218,7 @@ void dataMode(){
 		FastLED.show();
 		D_FPS;
 		D_LED(OFF);
-		#ifdef SERIAL_FLUSH
-			serialFlush();
-		#endif
+		SERIAL_FLUSH;
 	}
 }
 
@@ -231,11 +236,5 @@ void timeouts(){
 			mode = Header;
 			lastByteTime = t; // Reset counter
 		}
-	}
-}
-
-void serialFlush(){
-	while(Serial.available() > 0) {
-		Serial.read();
 	}
 }

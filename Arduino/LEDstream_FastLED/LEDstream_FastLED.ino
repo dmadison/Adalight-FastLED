@@ -20,9 +20,9 @@
  */
 
 // --- General Settings
-static const uint16_t 
+const uint16_t 
 	Num_Leds   =  80;        // strip length
-static const uint8_t
+const uint8_t
 	Brightness =  255;       // maximum brightness
 
 // --- FastLED Setings
@@ -32,9 +32,9 @@ static const uint8_t
 //#define PIN_CLOCK  7       // led data clock pin (uncomment if you're using a 4-wire LED type)
 
 // --- Serial Settings
-static const unsigned long
+const unsigned long
 	SerialSpeed    = 115200; // serial port speed
-static const uint16_t
+const uint16_t
 	SerialTimeout  = 60;     // time before LEDs are shut off if no data (in seconds), 0 to disable
 
 // --- Optional Settings (uncomment to add)
@@ -68,7 +68,7 @@ uint8_t * ledsRaw = (uint8_t *)leds;
 // XOR 0x55). LED data follows, 3 bytes per LED, in order R, G, B,
 // where 0 = off and 255 = max brightness.
 
-static const uint8_t magic[] = {
+const uint8_t magic[] = {
 	'A','d','a'};
 #define MAGICSIZE  sizeof(magic)
 
@@ -79,13 +79,13 @@ static const uint8_t magic[] = {
 
 enum processModes_t {Header, Data} mode = Header;
 
-static int16_t
+int16_t
 	c;
-static uint16_t
+uint16_t
 	outPos;
-static uint32_t
+uint32_t
 	bytesRemaining;
-static unsigned long
+unsigned long
 	t,
 	lastByteTime,
 	lastAckTime;

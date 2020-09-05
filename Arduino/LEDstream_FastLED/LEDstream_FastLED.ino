@@ -122,8 +122,10 @@ void setup(){
 
 	#if defined(PIN_CLOCK) && defined(PIN_DATA)
 		FastLED.addLeds<LED_TYPE, PIN_DATA, PIN_CLOCK, COLOR_ORDER>(leds, Num_Leds);
-	#else
+	#elif defined(PIN_DATA)
 		FastLED.addLeds<LED_TYPE, PIN_DATA, COLOR_ORDER>(leds, Num_Leds);
+	#else
+		#error "No LED output pins defined. Check your settings at the top."
 	#endif
 	
 	FastLED.setBrightness(Brightness);

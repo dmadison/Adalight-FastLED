@@ -41,7 +41,6 @@ const uint16_t
 #define SERIAL_FLUSH         // Serial buffer cleared on LED latch
 //#define CLEAR_ON_START     // LEDs are cleared on reset
 //#define GROUND_PIN 10      // additional grounding pin (optional)
-//#define CALIBRATE          // sets all LEDs to the color of the first
 
 // --- Debug Settings (uncomment to add)
 //#define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
@@ -206,7 +205,7 @@ void headerMode(){
 void dataMode(){
 	// If LED data is not full
 	if (outPos < sizeof(leds)){
-		dataSet();
+		ledsRaw[outPos++] = c; // Issue next byte
 	}
 	bytesRemaining--;
  
@@ -220,19 +219,6 @@ void dataMode(){
 			serialFlush();
 		#endif
 	}
-}
-
-void dataSet(){
-	#ifdef CALIBRATE
-		if(outPos < 3)
-			ledsRaw[outPos++] = c;
-		else{
-			ledsRaw[outPos] = ledsRaw[outPos%3]; // Sets RGB data to first LED color
-			outPos++;
-		}
-	#else
-		ledsRaw[outPos++] = c; // Issue next byte
-	#endif
 }
 
 void timeouts(){

@@ -40,7 +40,6 @@ const uint16_t
 // --- Optional Settings (uncomment to add)
 #define SERIAL_FLUSH         // Serial buffer cleared on LED latch
 //#define CLEAR_ON_START     // LEDs are cleared on reset
-//#define GROUND_PIN 10      // additional grounding pin (optional)
 
 // --- Debug Settings (uncomment to add)
 //#define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
@@ -107,11 +106,6 @@ unsigned long t, lastByteTime, lastAckTime;  // millisecond timestamps
 #endif
 
 void setup(){
-	#ifdef GROUND_PIN
-		pinMode(GROUND_PIN, OUTPUT);
-		digitalWrite(GROUND_PIN, LOW);
-	#endif
-
 	#ifdef DEBUG_LED
 		pinMode(DEBUG_LED, OUTPUT);
 		digitalWrite(DEBUG_LED, LOW);

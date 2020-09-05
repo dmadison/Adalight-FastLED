@@ -78,16 +78,10 @@ const uint8_t magic[] = {
 
 enum processModes_t {Header, Data} mode = Header;
 
-int16_t
-	c;
-uint16_t
-	outPos;
-uint32_t
-	bytesRemaining;
-unsigned long
-	t,
-	lastByteTime,
-	lastAckTime;
+int16_t c;  // current byte, must support -1 if no data available
+uint16_t outPos;  // current byte index in the LED array
+uint32_t bytesRemaining;  // count of bytes yet received, set by checksum
+unsigned long t, lastByteTime, lastAckTime;  // millisecond timestamps
 
 // Debug macros initialized
 #ifdef DEBUG_LED

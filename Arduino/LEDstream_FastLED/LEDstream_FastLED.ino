@@ -1,11 +1,9 @@
-/* LEDstream_FastLED
- * 
- * Modified version of Adalight that uses the FastLED
- * library (http://fastled.io) for driving led strips.
- * 
- * http://github.com/dmadison/Adalight-FastLED
+/*
+ *  Project     Adalight FastLED
+ *  @author     David Madison
+ *  @link       github.com/dmadison/Adalight-FastLED
+ *  @license    LGPL - Copyright (c) 2017 David Madison
  *
- * --------------------------------------------------------------------
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,36 +16,36 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * --------------------------------------------------------------------
+ *
  */
 
+#include <Arduino.h>
+
 // --- General Settings
-static const uint16_t 
-	Num_Leds   =  80;        // strip length
-static const uint8_t
-	Brightness =  255;       // maximum brightness
+const uint16_t 
+	Num_Leds   =  80;         // strip length
+const uint8_t
+	Brightness =  255;        // maximum brightness
 
 // --- FastLED Setings
-#define LED_TYPE     WS2812B // led strip type for FastLED
-#define COLOR_ORDER  GRB     // color order for bitbang
-#define PIN_DATA     6       // led data output pin
-//#define PIN_CLOCK  7       // led data clock pin (uncomment if you're using a 4-wire LED type)
+#define LED_TYPE     WS2812B  // led strip type for FastLED
+#define COLOR_ORDER  GRB      // color order for bitbang
+#define PIN_DATA     6        // led data output pin
+// #define PIN_CLOCK  7       // led data clock pin (uncomment if you're using a 4-wire LED type)
 
 // --- Serial Settings
-static const unsigned long
-	SerialSpeed    = 115200; // serial port speed
-static const uint16_t
-	SerialTimeout  = 60;     // time before LEDs are shut off if no data (in seconds), 0 to disable
+const unsigned long
+	SerialSpeed    = 115200;  // serial port speed
+const uint16_t
+	SerialTimeout  = 60;      // time before LEDs are shut off if no data (in seconds), 0 to disable
 
 // --- Optional Settings (uncomment to add)
-#define SERIAL_FLUSH         // Serial buffer cleared on LED latch
-//#define CLEAR_ON_START     // LEDs are cleared on reset
-//#define GROUND_PIN 10      // additional grounding pin (optional)
-//#define CALIBRATE          // sets all LEDs to the color of the first
+#define SERIAL_FLUSH          // Serial buffer cleared on LED latch
+// #define CLEAR_ON_START     // LEDs are cleared on reset
 
 // --- Debug Settings (uncomment to add)
-//#define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
-//#define DEBUG_FPS 8        // enables a pulse on LED latch
+// #define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
+// #define DEBUG_FPS 8        // enables a pulse on LED latch
 
 // --------------------------------------------------------------------
 
@@ -70,7 +68,7 @@ uint8_t * ledsRaw = (uint8_t *)leds;
 // XOR 0x55). LED data follows, 3 bytes per LED, in order R, G, B,
 // where 0 = off and 255 = max brightness.
 
-static const uint8_t magic[] = {
+const uint8_t magic[] = {
 	'A','d','a'};
 #define MAGICSIZE  sizeof(magic)
 
@@ -81,18 +79,23 @@ static const uint8_t magic[] = {
 
 enum processModes_t {Header, Data} mode = Header;
 
-static int16_t
-	c;
-static uint16_t
-	outPos;
-static uint32_t
-	bytesRemaining;
-static unsigned long
-	t,
-	lastByteTime,
-	lastAckTime;
+int16_t c;  // current byte, must support -1 if no data available
+uint16_t outPos;  // current byte index in the LED array
+uint32_t bytesRemaining;  // count of bytes yet received, set by checksum
+unsigned long t, lastByteTime, lastAckTime;  // millisecond timestamps
 
-// Debug macros initialized
+void headerMode();
+void dataMode();
+void timeouts();
+
+// Macros initialized
+#ifdef SERIAL_FLUSH
+	#undef SERIAL_FLUSH
+	#define SERIAL_FLUSH while(Serial.available() > 0) { Serial.read(); }
+#else
+	#define SERIAL_FLUSH
+#endif
+
 #ifdef DEBUG_LED
 	#define ON  1
 	#define OFF 0
@@ -109,11 +112,6 @@ static unsigned long
 #endif
 
 void setup(){
-	#ifdef GROUND_PIN
-		pinMode(GROUND_PIN, OUTPUT);
-		digitalWrite(GROUND_PIN, LOW);
-	#endif
-
 	#ifdef DEBUG_LED
 		pinMode(DEBUG_LED, OUTPUT);
 		digitalWrite(DEBUG_LED, LOW);
@@ -123,10 +121,12 @@ void setup(){
 		pinMode(DEBUG_FPS, OUTPUT);
 	#endif
 
-	#ifdef PIN_CLOCK
+	#if defined(PIN_CLOCK) && defined(PIN_DATA)
 		FastLED.addLeds<LED_TYPE, PIN_DATA, PIN_CLOCK, COLOR_ORDER>(leds, Num_Leds);
-	#else
+	#elif defined(PIN_DATA)
 		FastLED.addLeds<LED_TYPE, PIN_DATA, COLOR_ORDER>(leds, Num_Leds);
+	#else
+		#error "No LED output pins defined. Check your settings at the top."
 	#endif
 	
 	FastLED.setBrightness(Brightness);
@@ -141,11 +141,7 @@ void setup(){
 	lastByteTime = lastAckTime = millis(); // Set initial counters
 }
 
-void loop(){
-	adalight();
-}
-
-void adalight(){ 
+void loop(){ 
 	t = millis(); // Save current time
 
 	// If there is new serial data
@@ -208,7 +204,7 @@ void headerMode(){
 void dataMode(){
 	// If LED data is not full
 	if (outPos < sizeof(leds)){
-		dataSet();
+		ledsRaw[outPos++] = c; // Issue next byte
 	}
 	bytesRemaining--;
  
@@ -218,23 +214,8 @@ void dataMode(){
 		FastLED.show();
 		D_FPS;
 		D_LED(OFF);
-		#ifdef SERIAL_FLUSH
-			serialFlush();
-		#endif
+		SERIAL_FLUSH;
 	}
-}
-
-void dataSet(){
-	#ifdef CALIBRATE
-		if(outPos < 3)
-			ledsRaw[outPos++] = c;
-		else{
-			ledsRaw[outPos] = ledsRaw[outPos%3]; // Sets RGB data to first LED color
-			outPos++;
-		}
-	#else
-		ledsRaw[outPos++] = c; // Issue next byte
-	#endif
 }
 
 void timeouts(){
@@ -251,11 +232,5 @@ void timeouts(){
 			mode = Header;
 			lastByteTime = t; // Reset counter
 		}
-	}
-}
-
-void serialFlush(){
-	while(Serial.available() > 0) {
-		Serial.read();
 	}
 }

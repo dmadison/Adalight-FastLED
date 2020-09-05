@@ -1,7 +1,7 @@
 language: C
 env:
   global:
-    - IDE_VERSION=1.8.1
+    - IDE_VERSION=1.8.13
 matrix:
   include:
     - name: "WS2812B"
@@ -18,7 +18,7 @@ before_install:
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
   
   # Install Libraries
-  - arduino --install-library "FastLED:3.2.0"
+  - arduino --install-library "FastLED:3.3.3"
 
   # Sketch Compiling Functions
   - CYAN="\033[36m"; YELLOW="\033[33m"; NOC="\033[0m";

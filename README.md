@@ -6,11 +6,11 @@
 
 This project modifies the Adalight protocol to use [FastLED](https://github.com/FastLED/FastLED) ([fastled.io](http://fastled.io)). This expands Adalight to, in theory, work with *[any supported FastLED strip](https://github.com/FastLED/FastLED/wiki/Chipset-reference)* including WS2812B (aka Adafruit NeoPixels).
 
-In addition to ambilight setups, the protocol can be used to stream *any* color data over serial from a computer to supported LED strips.
+In addition to ambilight setups, the protocol can be used to stream any color data over serial from a computer to supported LED strips.
 
-For this sketch to work, you'll need to have a copy of the FastLED library. You can download FastLED [from GitHub](https://github.com/FastLED/FastLED) or through the libraries manager of the Arduino IDE. This program was writen using FastLED 3.1.3 - note that earlier versions of FastLED are untested and may not work properly.
+For this sketch to work, you'll need to have a copy of the FastLED library. You can download FastLED [from GitHub](https://github.com/FastLED/FastLED) or through the libraries manager of the Arduino IDE. This program was writen using FastLED 3 - note that earlier versions of FastLED are untested and may not work properly.
 
-For more information on my own ambilight setup, see [the project page](http://www.partsnotincluded.com/projects/ambilight/) on [PartsNotIncluded.com](http://www.partsnotincluded.com/).
+For more information on my own ambilight setup, see [the project page](https://www.partsnotincluded.com/diy-ambilight-ws2812b/) on [PartsNotIncluded.com](http://www.partsnotincluded.com/).
 
 ## Basic Setup
 
@@ -20,9 +20,9 @@ Open the LEDstream_FastLED file in the Arduino IDE and customize the settings at
 - LED data pin
 - LED type
 
-If you are using a 4-wire LED chipset like APA102, you will need to uncomment the `PIN_CLOCK` line and set that as well.
+If you are using a 4-wire LED chipset like APA102 or SK9822, you will need to uncomment the `PIN_CLOCK` line and set that as well.
 
-Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using [Patrick Siegler's](https://github.com/psieg/) fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack/releases).
+Upload to your Arduino and use a corresponding PC application to stream color data. You can get the Processing files from the [main Adalight repository](https://github.com/adafruit/Adalight), though I would recommend using Patrick Siegler's fork of Lightpacks's Prismatik, which you can find [here](https://github.com/psieg/Lightpack/releases).
 
 ## Additional Settings
 
@@ -33,7 +33,7 @@ There are additional settings to allow for adjusting:
 - Serial speed
 - Serial timeout length
 
-There are also optional settings to clear the LEDs on reset, configure a dedicated ground pin, and to put the Arduino into a "calibration" mode, where all LED colors match the first LED. To help with flickering, the option to flush the serial buffer after every latch is enabled by default.
+There are also optional settings to clear the LEDs on reset or flush the incoming serial buffer after every latch. This latter option is enabled by default to help with flickering when using WS2812B LEDs.
 
 ## Debug Settings
 
@@ -45,7 +45,7 @@ The code includes two debugging options:
 
 `DEBUG_FPS`, similarly, will toggle a given pin when the LEDs latch. This is useful for measuring framerate with external hardware, like a logic analyzer.
 
-To enable either of these settings, uncomment their respective '#define' lines.
+To enable either of these settings, uncomment their respective `#define` lines.
 
 ## Issues and LED-types
 

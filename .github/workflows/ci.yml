@@ -1,0 +1,42 @@
+name: build
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        board: ["Arduino Uno", "Arduino Nano", "Arduino Leonardo", "Arduino Mega 2560"]
+        include:
+          - board: "Arduino Uno"  # board name, human-readable (matching board array above)
+            platform: "arduino:avr"  # board platform, to be installed by the CLI
+            fqbn: "arduino:avr:uno"  # fully qualified board name
+          - board: "Arduino Nano"
+            platform: "arduino:avr"
+            fqbn: "arduino:avr:nano:cpu=atmega328"
+          - board: "Arduino Leonardo"
+            platform: "arduino:avr"
+            fqbn: "arduino:avr:leonardo"
+          - board: "Arduino Mega 2560"
+            platform: "arduino:avr"
+            fqbn: "arduino:avr:mega:cpu=atmega2560"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1.1.1
+
+      - name: Install Board Platform
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install ${{ matrix.platform }}
+
+      - name: Install FastLED Library
+        run: arduino-cli lib install FastLED
+
+      - name: Compile Sketch
+        run: arduino-cli compile --fqbn ${{ matrix.fqbn }} Arduino/LEDstream_FastLED/LEDstream_FastLED.ino

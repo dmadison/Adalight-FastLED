@@ -1,4 +1,4 @@
-# Adalight-FastLED
+# Adalight-FastLED ![Build Status](https://github.com/dmadison/Adalight-FastLED/workflows/build/badge.svg)
 
 ![Adalight-Rainbow](http://i.imgur.com/sHygxq9.jpg)
 

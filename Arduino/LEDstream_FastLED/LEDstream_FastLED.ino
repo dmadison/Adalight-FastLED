@@ -46,7 +46,7 @@ const uint16_t
 // --- Debug Settings (uncomment to add)
 // #define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
 // #define DEBUG_FPS 8        // enables a pulse on LED latch
-
+// #define ECHO_LEDCOUNT      // Echo LED count in ack message for auto-setup
 // --------------------------------------------------------------------
 
 #include <FastLED.h>
@@ -222,7 +222,11 @@ void timeouts(){
 	// No data received. If this persists, send an ACK packet
 	// to host once every second to alert it to our presence.
 	if((t - lastAckTime) >= 1000) {
-		Serial.print("Ada\n"); // Send ACK string to host
+    #ifdef ECHO_LEDCOUNT
+		  Serial.print("Ada\n" + Num_Leds); // Send ACK string to host with LED count
+    #else
+      Serial.print("Ada\n"); // Send ACK string to host
+    #endif
 		lastAckTime = t; // Reset counter
 
 		// If no data received for an extended time, turn off all LEDs.

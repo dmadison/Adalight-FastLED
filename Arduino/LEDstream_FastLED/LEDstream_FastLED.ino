@@ -24,8 +24,10 @@
 // --- General Settings
 const uint16_t 
 	Num_Leds   =  80;         // strip length
+uint8_t
+  Brightness =  255;        // variable brightness
 const uint8_t
-	Brightness =  255;        // maximum brightness
+  Max_Brightness =  60;        // maximum brightness
 
 // --- FastLED Setings
 #define LED_TYPE     WS2812B  // led strip type for FastLED
@@ -47,6 +49,7 @@ const uint16_t
 // #define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
 // #define DEBUG_FPS 8        // enables a pulse on LED latch
 // #define ECHO_LEDCOUNT      // Echo LED count in ack message for auto-setup
+// #define ECHO_BRIGHTNESS    // Echo Brightness in ack message for auto-setup
 // --------------------------------------------------------------------
 
 #include <FastLED.h>
@@ -129,14 +132,26 @@ void setup(){
 		#error "No LED output pins defined. Check your settings at the top."
 	#endif
 	
+if (Brightness <= Max_Brightness) {
 	FastLED.setBrightness(Brightness);
+  } else {
+    FastLED.setBrightness(Max_Brightness);  
+  }
 
 	#ifdef CLEAR_ON_START
 		FastLED.show();
 	#endif
 
 	Serial.begin(SerialSpeed);
-	Serial.print("Ada\n"); // Send ACK string to host
+  Serial.println("Ada"); // Send ACK string to host
+  #ifdef ECHO_LEDCOUNT
+    Serial.print("COUNT=");
+    Serial.println(Num_Leds);
+  #endif
+  #ifdef ECHO_BRIGHTNESS
+    Serial.print("BRI=");
+    Serial.println(Brightness);
+  #endif
 
 	lastByteTime = lastAckTime = millis(); // Set initial counters
 }
@@ -194,6 +209,15 @@ void headerMode(){
 					outPos = 0;
 					memset(leds, 0, Num_Leds * sizeof(struct CRGB));
 					mode = Data; // Proceed to latch wait mode
+        } else {
+          // If Brightness command is issued, change brightness.
+          if (hi == 4 && lo == 20 && chk != Brightness) {
+            if (chk <= Max_Brightness && chk >= 0) {
+              Brightness = chk;
+              FastLED.setBrightness(Brightness);
+              FastLED.show();
+            }            
+          }
 				}
 				headPos = 0; // Reset header position regardless of checksum result
 				break;
@@ -222,10 +246,14 @@ void timeouts(){
 	// No data received. If this persists, send an ACK packet
 	// to host once every second to alert it to our presence.
 	if((t - lastAckTime) >= 1000) {
+    Serial.println("Ada"); // Send ACK string to host with LED count
     #ifdef ECHO_LEDCOUNT
-		  Serial.print("Ada\n" + Num_Leds); // Send ACK string to host with LED count
-    #else
-      Serial.print("Ada\n"); // Send ACK string to host
+      Serial.print("COUNT=");
+      Serial.println(Num_Leds);
+    #endif
+    #ifdef ECHO_BRIGHTNESS
+      Serial.print("BRI=");
+      Serial.println(Brightness);
     #endif
 		lastAckTime = t; // Reset counter
 

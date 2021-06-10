@@ -27,7 +27,7 @@ const uint16_t
 uint8_t
   Brightness =  255;        // variable brightness
 const uint8_t
-  Max_Brightness =  60;        // maximum brightness
+  Max_Brightness =  255;        // maximum brightness
 
 // --- FastLED Setings
 #define LED_TYPE     WS2812B  // led strip type for FastLED

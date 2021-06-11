@@ -20,6 +20,7 @@
  */
 
 #include <Arduino.h>
+#include <EEPROM.h>
 
 // --- General Settings
 const uint16_t 
@@ -115,6 +116,14 @@ void timeouts();
 #endif
 
 void setup(){
+  // Check if we've stored brightness to EEPROM, save it if not.
+  int brightSet = EEPROM.read(0);
+  if (brightSet != 1) {
+    EEPROM.write(0,1);
+    EEPROM.write(1,Brightness);
+  } else {
+    Brightness = EEPROM.read(1);
+  }
 	#ifdef DEBUG_LED
 		pinMode(DEBUG_LED, OUTPUT);
 		digitalWrite(DEBUG_LED, LOW);
@@ -214,6 +223,7 @@ void headerMode(){
           if (hi == 4 && lo == 20 && chk != Brightness) {
             if (chk <= Max_Brightness && chk >= 0) {
               Brightness = chk;
+              EEPROM.write(1,Brightness);
               FastLED.setBrightness(Brightness);
               FastLED.show();
             }            

@@ -33,8 +33,22 @@ There are additional settings to allow for adjusting:
 - LED color order
 - Serial speed
 - Serial timeout length
+- Echo Brightness on Acknowledgment
+- Echo LedCount on Acknowledgement
 
 There are also optional settings to clear the LEDs on reset or flush the incoming serial buffer after every latch. This latter option is enabled by default to help with flickering when using WS2812B LEDs.
+
+## Set Brightness
+
+You can *also* now set the brightness of the LEDs after boot, without having to modify config files. To do so, send a serial packet to the device,
+but use the following byte sequence:
+
+Bytes 0-2 (Magic) ('ADA'), etc.
+Byte 3 (hi) - 04
+Byte 4 (lo) - 20
+Byte 5 (brightness) - 0-255
+
+You should ensure that you are not trying to send color data at the same time, or issues will arise.
 
 ## Debug Settings
 

@@ -45,6 +45,7 @@ const uint16_t
 // --- Optional Settings (uncomment to add)
 #define SERIAL_FLUSH          // Serial buffer cleared on LED latch
 // #define CLEAR_ON_START     // LEDs are cleared on reset
+// #define STORE_BRIGHTNESS   // Store brightness in EEPROM if set by the user
 
 // --- Debug Settings (uncomment to add)
 // #define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
@@ -133,7 +134,8 @@ void timeouts();
 #endif
 
 void setup(){
-  // Check if we've stored brightness to EEPROM, save it if not.
+  // Check if we've stored brightness to EEPROM (if enabled), save it if not.
+  #ifdef STORE_BRIGHTNESS
   int brightSet = EEPROM.read(0);
   if (brightSet != 1) {
     EEPROM.write(0,1);
@@ -141,6 +143,7 @@ void setup(){
   } else {
     Brightness = EEPROM.read(1);
   }
+  #endif
 	#ifdef DEBUG_LED
 		pinMode(DEBUG_LED, OUTPUT);
 		digitalWrite(DEBUG_LED, LOW);
@@ -242,7 +245,9 @@ void headerMode(){
           if (hi == br_str[0] && lo == br_str[1]) {
             if (chk <= Max_Brightness && chk >= 0) {
               Brightness = chk;
-              EEPROM.write(1,Brightness);
+              #ifdef STORE_BRIGHTNESS
+                EEPROM.write(1,Brightness);
+              #endif
               FastLED.setBrightness(Brightness);
               FastLED.show();
               lastByteTime = lastAckTime = millis(); // Set initial counters

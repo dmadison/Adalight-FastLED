@@ -33,6 +33,7 @@ There are additional settings to allow for adjusting:
 - LED color order
 - Serial speed
 - Serial timeout length
+- Store brightness to EEPROM
 
 There are also optional settings to clear the LEDs on reset or flush the incoming serial buffer after every latch. This latter option is enabled by default to help with flickering when using WS2812B LEDs.
 

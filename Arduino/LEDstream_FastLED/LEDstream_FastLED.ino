@@ -49,8 +49,7 @@ const uint16_t
 // --- Debug Settings (uncomment to add)
 // #define DEBUG_LED 13       // toggles the Arduino's built-in LED on header match
 // #define DEBUG_FPS 8        // enables a pulse on LED latch
-// #define ECHO_LEDCOUNT      // Echo LED count in ack message for auto-setup
-// #define ECHO_BRIGHTNESS    // Echo Brightness in ack message for auto-setup
+
 // --------------------------------------------------------------------
 
 #include <FastLED.h>
@@ -73,7 +72,25 @@ uint8_t * ledsRaw = (uint8_t *)leds;
 // where 0 = off and 255 = max brightness.
 
 const uint8_t magic[] = {
-	'A','d','a'};
+  'A','d','a'};
+
+// Use these to track what state we're in for our header
+bool isMagic = false;
+bool isCommand = false;
+
+// A secondary magic word used to initiate the command protocol
+// various device parameters
+const uint8_t cmd[] = {
+  'A','d','b'};
+
+// String for state response
+const uint8_t st_str[] = {
+'S','T'};
+
+// String for brightness response
+const uint8_t br_str[] = {
+'B','R'};
+
 #define MAGICSIZE  sizeof(magic)
 
 // Check values are header byte # - 1, as they are indexed from 0
@@ -152,15 +169,7 @@ if (Brightness <= Max_Brightness) {
 	#endif
 
 	Serial.begin(SerialSpeed);
-  Serial.println("Ada"); // Send ACK string to host
-  #ifdef ECHO_LEDCOUNT
-    Serial.print("COUNT=");
-    Serial.println(Num_Leds);
-  #endif
-  #ifdef ECHO_BRIGHTNESS
-    Serial.print("BRI=");
-    Serial.println(Brightness);
-  #endif
+  Serial.print("Ada\n"); // Send ACK string to host
 
 	lastByteTime = lastAckTime = millis(); // Set initial counters
 }
@@ -193,11 +202,17 @@ void headerMode(){
 		hi, lo, chk;
 
 	if(headPos < MAGICSIZE){
-		// Check if magic word matches
-		if(c == magic[headPos]) {headPos++;}
-		else {headPos = 0;}
+    // Check if magic word(s) matches
+    if(c == magic[headPos]) {
+      isMagic = true;
+      headPos++;
+    } else if(c == cmd[headPos]) {
+      isCommand = true;
+      headPos++;
+    } else {
+      headPos = 0;
 	}
-	else{
+  } else {    
 		// Magic word matches! Now verify checksum
 		switch(headPos){
 			case HICHECK:
@@ -210,6 +225,7 @@ void headerMode(){
 				break;
 			case CHECKSUM:
 				chk = c;
+        if (isMagic) {
 				if(chk == (hi ^ lo ^ 0x55)) {
 					// Checksum looks valid. Get 16-bit LED count, add 1
 					// (# LEDs is always > 0) and multiply by 3 for R,G,B.
@@ -218,17 +234,32 @@ void headerMode(){
 					outPos = 0;
 					memset(leds, 0, Num_Leds * sizeof(struct CRGB));
 					mode = Data; // Proceed to latch wait mode
-        } else {
+          }
+        }
+        // Easy Peasy
+        if (isCommand) {
           // If Brightness command is issued, change brightness.
-          if (hi == 4 && lo == 20 && chk != Brightness) {
+          if (hi == br_str[0] && lo == br_str[1]) {
             if (chk <= Max_Brightness && chk >= 0) {
               Brightness = chk;
               EEPROM.write(1,Brightness);
               FastLED.setBrightness(Brightness);
               FastLED.show();
+              lastByteTime = lastAckTime = millis(); // Set initial counters
             }            
           }
+          // User has requested LED count and Brightness
+          if (hi == st_str[0] && lo == st_str[1]) { // S & T
+            Serial.print("Adb");
+            Serial.print("N=");
+            Serial.print(Num_Leds);
+            Serial.print(";B=");
+            Serial.println(Brightness);
+            lastByteTime = lastAckTime = millis(); // Set initial counters
 				}
+        }     
+        isMagic = false;
+        isCommand = false;
 				headPos = 0; // Reset header position regardless of checksum result
 				break;
 		}
@@ -257,14 +288,6 @@ void timeouts(){
 	// to host once every second to alert it to our presence.
 	if((t - lastAckTime) >= 1000) {
     Serial.println("Ada"); // Send ACK string to host with LED count
-    #ifdef ECHO_LEDCOUNT
-      Serial.print("COUNT=");
-      Serial.println(Num_Leds);
-    #endif
-    #ifdef ECHO_BRIGHTNESS
-      Serial.print("BRI=");
-      Serial.println(Brightness);
-    #endif
 		lastAckTime = t; // Reset counter
 
 		// If no data received for an extended time, turn off all LEDs.

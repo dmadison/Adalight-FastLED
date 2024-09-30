@@ -33,6 +33,7 @@ There are additional settings to allow for adjusting:
 - LED color order
 - Serial speed
 - Serial timeout length
+- Grouping of LEDs to increase Performance
 
 There are also optional settings to clear the LEDs on reset or flush the incoming serial buffer after every latch. This latter option is enabled by default to help with flickering when using WS2812B LEDs.
 
@@ -68,7 +69,7 @@ the License, or (at your option) any later version.
 Adalight is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
+GNU Lesser General Public License for more details. 
 
 You should have received a copy of the GNU Lesser General Public
 License along with Adalight.  If not, see <http://www.gnu.org/licenses/>.

@@ -27,6 +27,20 @@ const uint16_t
 const uint8_t
 	Brightness =  255;        // maximum brightness
 
+// Group LEDS for enhanced performance
+// Group_Leds =  1; no grouping
+// Group_Leds =  2;  and higher: group this number of LEDs together (color is copied from 1st LED of each group)
+
+// Tips:
+// Set Num_Leds to the total Number of LEDs in your strip
+// In the Software you use, adjust the number of LEDs to the total Number of LEDs divided by the grouping:
+// For example for an 80 LED strip with Group_Leds = 2; you would set it to 40 LEDs in the Software.
+// With Group_Leds = 4; you would set it to 20 LEDs. 
+// The higher the Group_Leds number, the better the performance / FPS will be.
+
+const uint8_t
+	Group_Leds =  1;        // Group x number of LEDs together
+
 // --- FastLED Setings
 #define LED_TYPE     WS2812B  // led strip type for FastLED
 #define COLOR_ORDER  GRB      // color order for bitbang
@@ -203,8 +217,16 @@ void headerMode(){
 
 void dataMode(){
 	// If LED data is not full
-	if (outPos < sizeof(leds)){
-		ledsRaw[outPos++] = c; // Issue next byte
+	if (outPos < sizeof(leds) / Group_Leds) {
+		if (Group_Leds == 1) { ledsRaw[outPos++] = c; } // Issue next byte, no grouping
+		else { // Group Leds
+			uint16_t outPosGroup = int( outPos * Group_Leds - outPos %3 * (Group_Leds-1) );
+			for(int i = 0; i < Group_Leds; i++) {
+				ledsRaw[outPosGroup] = c;
+				outPosGroup += 3;
+			}
+			outPos++;
+		}
 	}
 	bytesRemaining--;
  

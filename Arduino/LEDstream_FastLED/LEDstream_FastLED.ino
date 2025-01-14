@@ -102,9 +102,6 @@ void timeouts();
 #endif
 
 #ifdef DEBUG_LED
-	#define ON  1
-	#define OFF 0
-
 	#define D_LED(x) do {digitalWrite(DEBUG_LED, x);} while(0)
 #else
 	#define D_LED(x)
@@ -192,7 +189,7 @@ void headerMode(){
 				if(chk == (hi ^ lo ^ 0x55)) {
 					// Checksum looks valid. Get 16-bit LED count, add 1
 					// (# LEDs is always > 0) and multiply by 3 for R,G,B.
-					D_LED(ON);
+					D_LED(HIGH);
 					bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
 					outPos = 0;
 					memset(leds, 0, Num_Leds * sizeof(struct CRGB));
@@ -216,7 +213,7 @@ void dataMode(){
 		mode = Header; // Begin next header search
 		FastLED.show();
 		D_FPS;
-		D_LED(OFF);
+		D_LED(LOW);
 		SERIAL_FLUSH;
 	}
 }

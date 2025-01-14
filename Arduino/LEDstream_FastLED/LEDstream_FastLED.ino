@@ -52,7 +52,6 @@ const uint16_t
 #include <FastLED.h>
 
 CRGB leds[Num_Leds];
-uint8_t * ledsRaw = (uint8_t *)leds;
 
 // A 'magic word' (along with LED count & checksum) precedes each block
 // of LED data; this assists the microcontroller in syncing up with the
@@ -79,8 +78,8 @@ const uint8_t magic[] = {
 
 enum processModes_t {Header, Data} mode = Header;
 
-uint16_t outPos;             // current byte index in the LED array
-uint32_t bytesRemaining;     // count of bytes yet received, set by checksum
+uint32_t ledIndex;           // current index in the LED array
+uint32_t ledsRemaining;      // count of LEDs still to write, set by checksum (u16 + 1)
 
 unsigned long lastByteTime;  // ms timestamp, last byte received
 unsigned long lastAckTime;   // ms timestamp, lask acknowledge to the host
@@ -189,10 +188,10 @@ void headerMode(uint8_t c){
 				chk = c;
 				if(chk == (hi ^ lo ^ 0x55)) {
 					// Checksum looks valid. Get 16-bit LED count, add 1
-					// (# LEDs is always > 0) and multiply by 3 for R,G,B.
+					// (# of LEDs is always > 0), save and reset data
 					D_LED(HIGH);
-					bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
-					outPos = 0;
+					ledIndex = 0;
+					ledsRemaining = (256UL * (uint32_t)hi + (uint32_t)lo + 1UL);
 					memset(leds, 0, Num_Leds * sizeof(struct CRGB));
 					mode = Data; // Proceed to latch wait mode
 				}
@@ -203,16 +202,34 @@ void headerMode(uint8_t c){
 }
 
 void dataMode(uint8_t c){
-	// If LED data is not full
-	if (outPos < sizeof(leds)){
-		ledsRaw[outPos++] = c; // Issue next byte
+	static uint8_t channelIndex = 0;
+
+	// if LED data is not full, save the byte
+	if (ledIndex < Num_Leds) {
+		leds[ledIndex].raw[channelIndex] = c;
 	}
-	bytesRemaining--;
- 
-	if(bytesRemaining == 0) {
-		// End of data -- issue latch:
-		mode = Header; // Begin next header search
+	channelIndex++;  // increment regardless, for oversized data
+
+	// if we've filled this LED, move to the next
+	if (channelIndex >= 3) {
+		// reset the channel index so we can get ready to write
+		// the next LED, starting on the first channel (R/G/B)
+		channelIndex = 0;
+
+		// allow this to max out at Num_Leds, so that it represents which
+		// LEDs have data in them when the strip is ready to write
+		if (ledIndex < Num_Leds) ledIndex++;
+
+		// finished writing one LED, decrement the counter
+		ledsRemaining--;
+	}
+
+	// if all data has been read, write the output
+	if (ledsRemaining == 0) {
 		FastLED.show();
+		channelIndex = 0;  // reset channel tracking
+		mode = Header;     // begin next header search
+
 		D_FPS;
 		D_LED(LOW);
 		SERIAL_FLUSH;

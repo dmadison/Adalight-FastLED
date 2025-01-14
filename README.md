@@ -1,5 +1,5 @@
 # Adalight-FastLED
-[![Build Status](https://github.com/dmadison/Adalight-FastLED/workflows/build/badge.svg?branch=master)](https://github.com/dmadison/Adalight-FastLED/actions?query=workflow%3Abuild)
+[![Build Status](https://github.com/dmadison/Adalight-FastLED/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/dmadison/Adalight-FastLED/actions?query=workflow%3Abuild)
 
 ![Adalight-Rainbow](http://i.imgur.com/sHygxq9.jpg)
 

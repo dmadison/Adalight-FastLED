@@ -39,6 +39,13 @@ const unsigned long
 const uint16_t
 	SerialTimeout  = 60;      // time before LEDs are shut off if no data (in seconds), 0 to disable
 
+// --- Group Settings (uncomment to add)
+// Grouping will set a group of LEDs to the data received for a single one. This
+// lets you send less data to the device, increasing throughput and therefore
+// framerate - at the cost of resolution. Grouping only works if your strip is
+// evenly divisible by the amount of data sent.
+// #define GROUPING           // enable the automatic grouping feature
+
 // --- Optional Settings (uncomment to add)
 #define SERIAL_FLUSH          // Serial buffer cleared on LED latch
 // #define CLEAR_ON_START     // LEDs are cleared on reset
@@ -89,6 +96,7 @@ const unsigned long Timebase     = 1000;    // time units per second
 
 void headerMode(uint8_t c);
 void dataMode(uint8_t c);
+void groupProcessing();
 void timeouts();
 
 // Macros initialized
@@ -226,6 +234,10 @@ void dataMode(uint8_t c){
 
 	// if all data has been read, write the output
 	if (ledsRemaining == 0) {
+		#if defined(GROUPING)
+		groupProcessing();
+		#endif
+
 		FastLED.show();
 		channelIndex = 0;  // reset channel tracking
 		mode = Header;     // begin next header search
@@ -233,6 +245,27 @@ void dataMode(uint8_t c){
 		D_FPS;
 		D_LED(LOW);
 		SERIAL_FLUSH;
+	}
+}
+
+void groupProcessing() {
+	// if we've received the same amount of data as there
+	// are LEDs in the strip, don't do any group processing
+	if (Num_Leds == ledIndex) return;
+
+	const uint16_t GroupSize      = Num_Leds / ledIndex;
+	const uint16_t GroupRemainder = Num_Leds - (ledIndex * GroupSize);
+
+	// if the value isn't evenly divisible, don't bother trying to group
+	// (it won't look right without significant processing, i.e. overhead)
+	if (GroupRemainder != 0) return;
+
+	// otherwise, iterate backwards through the array, copying each LED color
+	// forwards to the rest of its group
+	for (uint16_t group = 1; group <= ledIndex; ++group) {
+		const CRGB     GroupColor = leds[ledIndex - group];
+		const uint16_t GroupStart = Num_Leds - (group * GroupSize);
+		fill_solid(&leds[GroupStart], GroupSize, GroupColor);
 	}
 }
 

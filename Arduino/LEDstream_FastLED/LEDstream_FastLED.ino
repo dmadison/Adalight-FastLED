@@ -39,6 +39,13 @@ const unsigned long
 const uint16_t
 	SerialTimeout  = 60;      // time before LEDs are shut off if no data (in seconds), 0 to disable
 
+// --- Group Settings (uncomment to add)
+// Grouping will set a group of LEDs to the data received for a single one. This
+// lets you send less data to the device, increasing throughput and therefore
+// framerate - at the cost of resolution. Grouping only works if your strip is
+// evenly divisible by the amount of data sent.
+// #define GROUPING           // enable the automatic grouping feature
+
 // --- Optional Settings (uncomment to add)
 #define SERIAL_FLUSH          // Serial buffer cleared on LED latch
 // #define CLEAR_ON_START     // LEDs are cleared on reset
@@ -52,7 +59,6 @@ const uint16_t
 #include <FastLED.h>
 
 CRGB leds[Num_Leds];
-uint8_t * ledsRaw = (uint8_t *)leds;
 
 // A 'magic word' (along with LED count & checksum) precedes each block
 // of LED data; this assists the microcontroller in syncing up with the
@@ -79,13 +85,18 @@ const uint8_t magic[] = {
 
 enum processModes_t {Header, Data} mode = Header;
 
-int16_t c;  // current byte, must support -1 if no data available
-uint16_t outPos;  // current byte index in the LED array
-uint32_t bytesRemaining;  // count of bytes yet received, set by checksum
-unsigned long t, lastByteTime, lastAckTime;  // millisecond timestamps
+uint32_t ledIndex;           // current index in the LED array
+uint32_t ledsRemaining;      // count of LEDs still to write, set by checksum (u16 + 1)
 
-void headerMode();
-void dataMode();
+unsigned long lastByteTime;  // ms timestamp, last byte received
+unsigned long lastAckTime;   // ms timestamp, lask acknowledge to the host
+
+unsigned long (*const now)(void) = millis;  // timing function
+const unsigned long Timebase     = 1000;    // time units per second
+
+void headerMode(uint8_t c);
+void dataMode(uint8_t c);
+void groupProcessing();
 void timeouts();
 
 // Macros initialized
@@ -97,9 +108,6 @@ void timeouts();
 #endif
 
 #ifdef DEBUG_LED
-	#define ON  1
-	#define OFF 0
-
 	#define D_LED(x) do {digitalWrite(DEBUG_LED, x);} while(0)
 #else
 	#define D_LED(x)
@@ -142,18 +150,18 @@ void setup(){
 }
 
 void loop(){ 
-	t = millis(); // Save current time
+	const int c = Serial.read();  // read one byte
 
-	// If there is new serial data
-	if((c = Serial.read()) >= 0){
-		lastByteTime = lastAckTime = t; // Reset timeout counters
+	// if there is data available
+	if(c >= 0){
+		lastByteTime = lastAckTime = now(); // Reset timeout counters
 
 		switch(mode) {
 			case Header:
-				headerMode();
+				headerMode(c);
 				break;
 			case Data:
-				dataMode();
+				dataMode(c);
 				break;
 		}
 	}
@@ -163,7 +171,7 @@ void loop(){
 	}
 }
 
-void headerMode(){
+void headerMode(uint8_t c){
 	static uint8_t
 		headPos,
 		hi, lo, chk;
@@ -188,10 +196,10 @@ void headerMode(){
 				chk = c;
 				if(chk == (hi ^ lo ^ 0x55)) {
 					// Checksum looks valid. Get 16-bit LED count, add 1
-					// (# LEDs is always > 0) and multiply by 3 for R,G,B.
-					D_LED(ON);
-					bytesRemaining = 3L * (256L * (long)hi + (long)lo + 1L);
-					outPos = 0;
+					// (# of LEDs is always > 0), save and reset data
+					D_LED(HIGH);
+					ledIndex = 0;
+					ledsRemaining = (256UL * (uint32_t)hi + (uint32_t)lo + 1UL);
 					memset(leds, 0, Num_Leds * sizeof(struct CRGB));
 					mode = Data; // Proceed to latch wait mode
 				}
@@ -201,32 +209,77 @@ void headerMode(){
 	}
 }
 
-void dataMode(){
-	// If LED data is not full
-	if (outPos < sizeof(leds)){
-		ledsRaw[outPos++] = c; // Issue next byte
+void dataMode(uint8_t c){
+	static uint8_t channelIndex = 0;
+
+	// if LED data is not full, save the byte
+	if (ledIndex < Num_Leds) {
+		leds[ledIndex].raw[channelIndex] = c;
 	}
-	bytesRemaining--;
- 
-	if(bytesRemaining == 0) {
-		// End of data -- issue latch:
-		mode = Header; // Begin next header search
+	channelIndex++;  // increment regardless, for oversized data
+
+	// if we've filled this LED, move to the next
+	if (channelIndex >= 3) {
+		// reset the channel index so we can get ready to write
+		// the next LED, starting on the first channel (R/G/B)
+		channelIndex = 0;
+
+		// allow this to max out at Num_Leds, so that it represents which
+		// LEDs have data in them when the strip is ready to write
+		if (ledIndex < Num_Leds) ledIndex++;
+
+		// finished writing one LED, decrement the counter
+		ledsRemaining--;
+	}
+
+	// if all data has been read, write the output
+	if (ledsRemaining == 0) {
+		#if defined(GROUPING)
+		groupProcessing();
+		#endif
+
 		FastLED.show();
+		channelIndex = 0;  // reset channel tracking
+		mode = Header;     // begin next header search
+
 		D_FPS;
-		D_LED(OFF);
+		D_LED(LOW);
 		SERIAL_FLUSH;
 	}
 }
 
+void groupProcessing() {
+	// if we've received the same amount of data as there
+	// are LEDs in the strip, don't do any group processing
+	if (Num_Leds == ledIndex) return;
+
+	const uint16_t GroupSize      = Num_Leds / ledIndex;
+	const uint16_t GroupRemainder = Num_Leds - (ledIndex * GroupSize);
+
+	// if the value isn't evenly divisible, don't bother trying to group
+	// (it won't look right without significant processing, i.e. overhead)
+	if (GroupRemainder != 0) return;
+
+	// otherwise, iterate backwards through the array, copying each LED color
+	// forwards to the rest of its group
+	for (uint16_t group = 1; group <= ledIndex; ++group) {
+		const CRGB     GroupColor = leds[ledIndex - group];
+		const uint16_t GroupStart = Num_Leds - (group * GroupSize);
+		fill_solid(&leds[GroupStart], GroupSize, GroupColor);
+	}
+}
+
 void timeouts(){
+	const unsigned long t = now();
+
 	// No data received. If this persists, send an ACK packet
 	// to host once every second to alert it to our presence.
-	if((t - lastAckTime) >= 1000) {
+	if((t - lastAckTime) >= Timebase) {
 		Serial.print("Ada\n"); // Send ACK string to host
 		lastAckTime = t; // Reset counter
 
 		// If no data received for an extended time, turn off all LEDs.
-		if(SerialTimeout != 0 && (t - lastByteTime) >= (uint32_t) SerialTimeout * 1000) {
+		if(SerialTimeout != 0 && (t - lastByteTime) >= (uint32_t) SerialTimeout * Timebase) {
 			memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
 			FastLED.show();
 			mode = Header;

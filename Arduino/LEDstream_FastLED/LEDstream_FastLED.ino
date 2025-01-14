@@ -87,6 +87,7 @@ unsigned long lastByteTime;  // ms timestamp, last byte received
 unsigned long lastAckTime;   // ms timestamp, lask acknowledge to the host
 
 unsigned long (*const now)(void) = millis;  // timing function
+const unsigned long Timebase     = 1000;    // time units per second
 
 void headerMode();
 void dataMode();
@@ -225,12 +226,12 @@ void timeouts(){
 
 	// No data received. If this persists, send an ACK packet
 	// to host once every second to alert it to our presence.
-	if((t - lastAckTime) >= 1000) {
+	if((t - lastAckTime) >= Timebase) {
 		Serial.print("Ada\n"); // Send ACK string to host
 		lastAckTime = t; // Reset counter
 
 		// If no data received for an extended time, turn off all LEDs.
-		if(SerialTimeout != 0 && (t - lastByteTime) >= (uint32_t) SerialTimeout * 1000) {
+		if(SerialTimeout != 0 && (t - lastByteTime) >= (uint32_t) SerialTimeout * Timebase) {
 			memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
 			FastLED.show();
 			mode = Header;

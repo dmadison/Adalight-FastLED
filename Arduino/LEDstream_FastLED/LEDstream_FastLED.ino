@@ -79,7 +79,6 @@ const uint8_t magic[] = {
 
 enum processModes_t {Header, Data} mode = Header;
 
-int16_t c;                   // current byte, must support -1 if no data available
 uint16_t outPos;             // current byte index in the LED array
 uint32_t bytesRemaining;     // count of bytes yet received, set by checksum
 
@@ -89,8 +88,8 @@ unsigned long lastAckTime;   // ms timestamp, lask acknowledge to the host
 unsigned long (*const now)(void) = millis;  // timing function
 const unsigned long Timebase     = 1000;    // time units per second
 
-void headerMode();
-void dataMode();
+void headerMode(uint8_t c);
+void dataMode(uint8_t c);
 void timeouts();
 
 // Macros initialized
@@ -144,16 +143,18 @@ void setup(){
 }
 
 void loop(){ 
-	// If there is new serial data
-	if((c = Serial.read()) >= 0){
+	const int c = Serial.read();  // read one byte
+
+	// if there is data available
+	if(c >= 0){
 		lastByteTime = lastAckTime = now(); // Reset timeout counters
 
 		switch(mode) {
 			case Header:
-				headerMode();
+				headerMode(c);
 				break;
 			case Data:
-				dataMode();
+				dataMode(c);
 				break;
 		}
 	}
@@ -163,7 +164,7 @@ void loop(){
 	}
 }
 
-void headerMode(){
+void headerMode(uint8_t c){
 	static uint8_t
 		headPos,
 		hi, lo, chk;
@@ -201,7 +202,7 @@ void headerMode(){
 	}
 }
 
-void dataMode(){
+void dataMode(uint8_t c){
 	// If LED data is not full
 	if (outPos < sizeof(leds)){
 		ledsRaw[outPos++] = c; // Issue next byte

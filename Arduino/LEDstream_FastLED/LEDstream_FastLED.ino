@@ -79,10 +79,14 @@ const uint8_t magic[] = {
 
 enum processModes_t {Header, Data} mode = Header;
 
-int16_t c;  // current byte, must support -1 if no data available
-uint16_t outPos;  // current byte index in the LED array
-uint32_t bytesRemaining;  // count of bytes yet received, set by checksum
-unsigned long t, lastByteTime, lastAckTime;  // millisecond timestamps
+int16_t c;                   // current byte, must support -1 if no data available
+uint16_t outPos;             // current byte index in the LED array
+uint32_t bytesRemaining;     // count of bytes yet received, set by checksum
+
+unsigned long lastByteTime;  // ms timestamp, last byte received
+unsigned long lastAckTime;   // ms timestamp, lask acknowledge to the host
+
+unsigned long (*const now)(void) = millis;  // timing function
 
 void headerMode();
 void dataMode();
@@ -142,11 +146,9 @@ void setup(){
 }
 
 void loop(){ 
-	t = millis(); // Save current time
-
 	// If there is new serial data
 	if((c = Serial.read()) >= 0){
-		lastByteTime = lastAckTime = t; // Reset timeout counters
+		lastByteTime = lastAckTime = now(); // Reset timeout counters
 
 		switch(mode) {
 			case Header:
@@ -219,6 +221,8 @@ void dataMode(){
 }
 
 void timeouts(){
+	const unsigned long t = now();
+
 	// No data received. If this persists, send an ACK packet
 	// to host once every second to alert it to our presence.
 	if((t - lastAckTime) >= 1000) {

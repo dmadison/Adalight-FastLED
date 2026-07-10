@@ -200,7 +200,7 @@ void headerMode(uint8_t c){
 					D_LED(HIGH);
 					ledIndex = 0;
 					ledsRemaining = (256UL * (uint32_t)hi + (uint32_t)lo + 1UL);
-					memset(leds, 0, Num_Leds * sizeof(struct CRGB));
+					fill_solid(leds, Num_Leds, CRGB::Black);
 					mode = Data; // Proceed to latch wait mode
 				}
 				headPos = 0; // Reset header position regardless of checksum result
@@ -280,7 +280,7 @@ void timeouts(){
 
 		// If no data received for an extended time, turn off all LEDs.
 		if(SerialTimeout != 0 && (t - lastByteTime) >= (uint32_t) SerialTimeout * Timebase) {
-			memset(leds, 0, Num_Leds * sizeof(struct CRGB)); //filling Led array by zeroes
+			fill_solid(leds, Num_Leds, CRGB::Black);
 			FastLED.show();
 			mode = Header;
 			lastByteTime = t; // Reset counter
